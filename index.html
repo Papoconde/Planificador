@@ -903,7 +903,7 @@ async function startVoice(){
   const VS=window.VS||(window.VS={finalT:'',live:'',on:false});
   VS.finalT='';VS.live='';VS.on=false;
   const show=()=>{const el=document.getElementById('vtxt');if(el)el.textContent=(VS.finalT+VS.live).trim()};
-  const finish=()=>{if(!VS.on)return;VS.on=false;const t=(VS.finalT+VS.live).trim();closeVoice();if(t)saveIdea(t)};
+  const finish=()=>{if(!VS.on)return;VS.on=false;const t=(VS.finalT+VS.live).trim();closeVoice();if(t){saveIdea(t);if(window.VS_used&&!dict)setTimeout(()=>location.reload(),1500)}};
   window.VS_show=show;window.VS_finish=finish;
   let down,up;
   if(dict){
@@ -914,8 +914,6 @@ async function startVoice(){
     }
     down=e=>{e.preventDefault();VS.finalT='';VS.live='';VS.on=true;btn.style.background='#b03a78';hint.textContent='Te escucho… suelta para guardar';dict.start().catch(()=>{VS.on=false;manual()})};
     up=()=>{btn.style.background='#d44c8f';dict.stop().catch(()=>{})};
-  } else if(window.VS_used){
-    manual();hint.textContent='En iPhone el dictado solo funciona una vez por carga. Usa el micro del teclado para dictar';
   } else {
     const rec=new SR();rec.lang='es-ES';rec.continuous=true;rec.interimResults=true;
     voiceRec=rec;
