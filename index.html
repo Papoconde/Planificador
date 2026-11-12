@@ -1202,7 +1202,7 @@ document.addEventListener('pointermove',e=>{
   if(!swDrag.on){if(dx>12&&dx>Math.abs(dy)*1.5){swDrag.on=true;swDrag.el.style.transition='none';swDrag.el.setAttribute('data-swipe','1')}else return}
   swDrag.dx=dx;
   const p=Math.max(0,Math.min(1,dx/120));
-  swDrag.el.style.transform=`translateX(${Math.min(dx,140)*0.5}px)`;
+  swDrag.el.style.transform=`translateX(${Math.min(dx,200)}px)`;
   swDrag.el.style.background=`rgba(15,123,108,${0.15+0.85*p})`;
   swDrag.el.style.setProperty('--swp',p);
 },{passive:true});
@@ -1210,10 +1210,10 @@ function swEnd(){
   if(!swDrag)return;const d=swDrag;swDrag=null;
   if(!d.on)return;
   if(d.dx>=110){
-    d.el.style.transition='transform .2s ease';d.el.style.transform='translateX(120%)';
+    d.el.style.transition='transform .25s ease';d.el.style.transform='translateX(110%)';
     const id=d.cb.dataset.h;const was=d.cb.checked;
     setTimeout(()=>{d.cb.click();showSwToast(id,was)},150);
-  }else swReset(d.el);
+  }else{d.el.style.transition='transform .25s ease, background .25s ease';swReset(d.el)}
 }
 document.addEventListener('pointerup',swEnd);
 document.addEventListener('pointercancel',()=>{if(swDrag){swReset(swDrag.el);swDrag=null}});
