@@ -903,7 +903,7 @@ async function startVoice(){
   const VS=window.VS||(window.VS={finalT:'',live:'',on:false});
   VS.finalT='';VS.live='';VS.on=false;
   const show=()=>{const el=document.getElementById('vtxt');if(el)el.textContent=(VS.finalT+VS.live).trim()};
-  const finish=()=>{if(!VS.on)return;VS.on=false;const t=(VS.finalT+VS.live).trim();closeVoice();if(t){saveIdea(t);if(window.VS_used&&!dict)setTimeout(()=>location.reload(),1500)}};
+  const finish=()=>{if(!VS.on)return;VS.on=false;const t=(VS.finalT+VS.live).trim();if(!t&&!dict){if(window.VS_manual)window.VS_manual();hint.textContent='No se ha oído nada. Escribe la idea o usa el micro del teclado';const v=document.getElementById('vman');if(v)setTimeout(()=>v.focus(),50);return}closeVoice();if(t){saveIdea(t);if(window.VS_used&&!dict)setTimeout(()=>location.reload(),1500)}};
   window.VS_show=show;window.VS_finish=finish;
   let down,up;
   if(dict){
