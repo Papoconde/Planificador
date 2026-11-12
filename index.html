@@ -444,7 +444,7 @@ body.dark .wdlg .sumrow{background:#2a2a2a}
 /* deslizar: la tarea se pone verde con la etiqueta Completado */
 .item{touch-action:pan-y;position:relative}
 .swwrap{position:relative}
-.swbg{position:absolute;left:0;top:0;bottom:0;width:0;background:#0f7b6c;color:#fff;border-radius:999px;display:flex;align-items:center;justify-content:center;gap:6px;overflow:hidden;white-space:nowrap;font-weight:600;font-size:14px;pointer-events:none;transition:width .25s ease}
+.swbg{position:absolute;left:0;top:0;bottom:0;width:124px;background:#0f7b6c;color:#fff;border-radius:999px;display:flex;align-items:center;justify-content:center;gap:6px;overflow:hidden;white-space:nowrap;font-weight:600;font-size:14px;pointer-events:none;z-index:0}
 .swbg>span{flex-shrink:0}
 .swbg .swlbl{opacity:var(--swl,0)}
 .swwrap>.item{position:relative;z-index:1}
@@ -1204,7 +1204,6 @@ function swWrap(el){
   w.style.marginBottom=getComputedStyle(el).marginBottom;
   const bg=document.createElement('div');bg.className='swbg';
   bg.innerHTML='<span>✓</span><span class="swlbl">Completado</span>';
-  bg.style.transition='none';
   el.style.margin='0';
   el.parentNode.insertBefore(w,el);w.appendChild(bg);w.appendChild(el);
   el._swWrap=w;el._swBg=bg;
@@ -1218,7 +1217,7 @@ function swReset(el){
   if(!el)return;
   el.style.transform='';el.style.background='';el.removeAttribute('data-swipe');
   el.style.transition='transform .25s ease';
-  if(el._swBg){el._swBg.style.transition='width .25s ease';el._swBg.style.width='0px'}
+  if(el._swWrap)el._swWrap.style.setProperty('--swl',0);
   setTimeout(()=>{if(!swDrag||swDrag.el!==el)swUnwrap(el)},260);
 }
 document.addEventListener('pointerdown',e=>{
@@ -1236,8 +1235,7 @@ document.addEventListener('pointermove',e=>{
   swDrag.dx=dx;
   const p=Math.max(0,Math.min(1,dx/120));
   swDrag.el.style.transform=`translateX(${Math.min(dx,200)}px)`;
-  if(swDrag.el._swWrap)swDrag.el._swWrap.style.setProperty('--swl',Math.max(0,Math.min(1,(dx-130)/50)));
-  if(swDrag.el._swBg)swDrag.el._swBg.style.width=Math.max(0,dx-6)+'px';
+  if(swDrag.el._swWrap)swDrag.el._swWrap.style.setProperty('--swl',Math.max(0,Math.min(1,(dx-40)/50)));
 },{passive:true});
 function swEnd(){
   if(!swDrag)return;const d=swDrag;swDrag=null;
