@@ -332,6 +332,11 @@ body.dark .btn.on,body.dark .wopt.on,body.dark .cxp.on{background:#2a2a2a!import
 /* sin subrayados grises en las tareas (ni al pasar el dedo o el ratón) */
 .tt,.tt:hover,.item *,.trow *,.item a,.trow a{text-decoration:none!important}
 .item,.trow,.thead,.prop,.ptr,.pdet[open] summary,.pdet summary{border-bottom:0!important;border-top:0!important}
+
+/* la clase .tt también es el título de las tareas: la barra del resumen va solo dentro de .thermo */
+.tt{background:none!important;height:auto!important;border-radius:0!important;overflow:visible!important;flex:initial!important}
+.thermo .tt{height:16px!important;border-radius:16px!important;overflow:hidden!important;flex:1!important;background:rgba(255,255,255,.3)!important}
+.thermo .tt div{background:linear-gradient(90deg,#ffffff,#8fb8ff)!important}
 </style>
 </head>
 <body>
