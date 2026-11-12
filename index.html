@@ -996,10 +996,11 @@ function renderWiz(){
   else if(p.type==='area'||p.type==='pagina')ctl=`<textarea class="wtxt" rows="4" data-wkey="${k}">${esc(o[k]||'')}</textarea>`;
   else if(p.type==='date')ctl=`<input type="date" class="wtxt" data-wkey="${k}" value="${esc((o[k]||'').slice(0,10))}">`;
   else ctl=`<input type="text" class="wtxt" data-wkey="${k}" value="${esc(o[k]||'')}" placeholder="Escribe aquí...">`;
+  const _p1=Math.round((wiz.i+1)/ks.length*100), _p0=wiz.shown??0; wiz.shown=_p1;
   document.body.insertAdjacentHTML('beforeend',`<div class="ov" id="wiz"><div class="wdlg">
     <button class="wx" data-wcancel>✕</button>
     <div class="mut">Paso ${wiz.i+1} de ${ks.length}</div>
-    <div class="wbar"><span style="--p0:${Math.round(wiz.i/ks.length*100)}%;--p1:${Math.round((wiz.i+1)/ks.length*100)}%"></span></div>
+    <div class="wbar"><span style="--p0:${_p0}%;--p1:${_p1}%"></span></div>
     <h2 class="wq">${WQ[k]||p.l}</h2>
     ${ctl}
     <div class="wbtns">
