@@ -441,6 +441,12 @@ body.dark .wdlg .sumrow{background:#2a2a2a}
 /* arrastrar: la columna de destino se ilumina */
 .col{transition:background .15s,box-shadow .15s}
 .col.hot{background:rgba(143,184,255,.14)!important;box-shadow:0 0 0 2px rgba(143,184,255,.85),0 0 22px rgba(143,184,255,.35)}
+/* deslizar: la tarea se pone verde con la etiqueta Completado */
+.item{touch-action:pan-y;position:relative}
+.item[data-swipe]::before{content:'Completado ✓';position:absolute;right:14px;top:50%;transform:translateY(-50%);color:#fff;font-weight:600;font-size:14px;opacity:var(--swp,0);pointer-events:none}
+.item[data-swipe] .tt,.item[data-swipe] .mut{color:#fff!important}
+.swtoast{position:fixed;left:12px;right:12px;bottom:calc(96px + env(safe-area-inset-bottom));z-index:30;background:#262626;color:#fff;border-radius:14px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 8px 24px rgba(0,0,0,.4);font-size:14px}
+.swtoast button{background:none;border:0;color:#8fb8ff;font:inherit;font-weight:600;cursor:pointer}
 </style>
 </head>
 <body>
@@ -893,7 +899,7 @@ document.addEventListener('change',e=>{
     return;
   }
   if('field' in t.dataset){const o=S.find(x=>x.id===t.dataset.id);if(o){const _prev=o.pr;o[t.dataset.field]=t.value;if(t.dataset.field==='pr'&&t.value==='Subido'){o.h=true;}if(t.dataset.field==='pr'&&t.value==='Por grabar'&&_prev==='Idea')askId=o.id;persist();render()}return}
-  if('h' in t.dataset){const o=S.find(x=>x.id===t.dataset.h);if(o){o.h=t.checked;persist();render()}}
+  if('h' in t.dataset){const o=S.find(x=>x.id===t.dataset.h);if(o){o.h=t.checked;o.hAt=o.h?ymd(hoyD):'';persist();render()}}
 });
 
 function frSync(t){const wrap=t.closest('[data-frw]');if(!wrap)return;const ins=wrap.querySelectorAll('input');const a=ins[0].value,b=ins[1].value;const v=(a||b)?a+'-'+b:'';const id=wrap.dataset.frw;if(id==='w'){if(wiz)wiz.o.fr=v;return}const o=S.find(x=>x.id===id);if(o){o.fr=v;saveSoon()}}
@@ -1179,6 +1185,46 @@ async function startVoice(){
   btn.addEventListener('pointercancel',up);
 }
 document.addEventListener('click',e=>{if(e.target.closest('[data-vcancel]')&&window.voiceDict){window.voiceDict.stop().catch(()=>{})}});
+
+/* deslizar a la derecha para completar una tarea (To Do y calendario) */
+let swDrag=null, swToast=null;
+function swReset(el){if(!el)return;el.style.transform='';el.style.background='';el.removeAttribute('data-swipe');el.style.transition='transform .2s ease, background .2s ease'}
+document.addEventListener('pointerdown',e=>{
+  if(e.pointerType!=='touch')return;
+  const el=e.target.closest('.item');
+  if(!el||el.closest('.kanban')||e.target.closest('input,select,textarea,button'))return;
+  const cb=el.querySelector('input[type=checkbox][data-h]');if(!cb)return;
+  swDrag={el,cb,x:e.clientX,y:e.clientY,on:false,dx:0};
+},{passive:true});
+document.addEventListener('pointermove',e=>{
+  if(!swDrag||e.pointerType!=='touch')return;
+  const dx=e.clientX-swDrag.x, dy=e.clientY-swDrag.y;
+  if(!swDrag.on){if(dx>12&&dx>Math.abs(dy)*1.5){swDrag.on=true;swDrag.el.style.transition='none';swDrag.el.setAttribute('data-swipe','1')}else return}
+  swDrag.dx=dx;
+  const p=Math.max(0,Math.min(1,dx/120));
+  swDrag.el.style.transform=`translateX(${Math.min(dx,140)*0.5}px)`;
+  swDrag.el.style.background=`rgba(15,123,108,${0.15+0.85*p})`;
+  swDrag.el.style.setProperty('--swp',p);
+},{passive:true});
+function swEnd(){
+  if(!swDrag)return;const d=swDrag;swDrag=null;
+  if(!d.on)return;
+  if(d.dx>=110){
+    d.el.style.transition='transform .2s ease';d.el.style.transform='translateX(120%)';
+    const id=d.cb.dataset.h;const was=d.cb.checked;
+    setTimeout(()=>{d.cb.click();showSwToast(id,was)},150);
+  }else swReset(d.el);
+}
+document.addEventListener('pointerup',swEnd);
+document.addEventListener('pointercancel',()=>{if(swDrag){swReset(swDrag.el);swDrag=null}});
+function showSwToast(id,was){
+  document.querySelectorAll('.swtoast').forEach(x=>x.remove());
+  const t=document.createElement('div');t.className='swtoast';
+  t.innerHTML='<span>Tarea completada</span><button data-swundo>Deshacer</button>';
+  document.body.appendChild(t);
+  clearTimeout(swToast);swToast=setTimeout(()=>t.remove(),4000);
+  t.querySelector('[data-swundo]').onclick=()=>{const o=S.find(x=>x.id===id);if(o){o.h=false;o.hAt='';persist();render()}t.remove();clearTimeout(swToast)};
+}
 </script>
 </body>
 </html>
