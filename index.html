@@ -461,7 +461,7 @@ body.dark .wdlg .sumrow{background:#2a2a2a}
 <script>
 document.addEventListener('selectstart',e=>{if(!e.target.closest||!e.target.closest('textarea,input,[contenteditable]'))e.preventDefault()});
 document.addEventListener('contextmenu',e=>{if(!e.target.closest||!e.target.closest('textarea,input,[contenteditable]'))e.preventDefault()});
-const K=['t','h','g','sg','a','p','ty','pr','e','f','tv','hs','du','fr','d','n','fl','di','pu','cu','tr'];
+const K=['t','h','g','sg','a','p','ty','pr','e','f','tv','hs','du','fr','d','n','fl','di','pu','cu','tr','hAt'];
 const L={g:['Universidad','Redes','Personal','WithDesign'],sg:['🎬 Vídeos','📌 Otros','🖌️ Diseño'],a:['Inglés','Proyecto I','Infografía','Diseño crítico','Cultura visual'],p:['Alta','Media','Baja'],ty:['Obligatorio','⏩ Adelanto','Opcional','Entrega'],pr:['Idea','Por grabar','Grabado','Editado','Subido'],e:['Sin estado','Sin empezar','En curso','Listo'],f:['Reel','Carrusel'],tv:['Logo / curiosidad','Rebrand','Tipografía','Opinión','Reto','Personal']};
 const PROPS=[
  {k:'t',l:'Tarea',type:'text'},{k:'h',l:'Hecho',type:'check'},
@@ -628,16 +628,16 @@ function subidosHtml(){
     (subs.map(o=>`<div class="trow"><a class="tt" data-open="${o.id}">${esc(o.t||'Sin título')}</a><div>${o.f?`<span class="pill">${esc(o.f)}</span>`:'<span class="mut">—</span>'}</div><div>${o.tv?`<span class="pill">${esc(o.tv)}</span>`:'<span class="mut">—</span>'}</div><div class="mut">${esc(fmtD(o.pu))||'—'}</div></div>`).join('')||'<p class="mut">Todavía no hay vídeos subidos.</p>');
 }
 
-let compG='__all';
+let compG='__all';let compO='fecha';
 let compP='all',compN=3;
 function inPeriod(o){if(compP==='all')return true;const d=(o.pu||o.di||o.fl||'').slice(0,10);if(!d)return false;if(compP==='mes')return d.slice(0,7)===ymd(hoyD).slice(0,7);const c=new Date(hoyD);c.setMonth(c.getMonth()-compN);return d>=ymd(c)&&d<=ymd(hoyD)}
 function completadoHtml(){
   const done=S.filter(o=>o.h&&inPeriod(o));
-  const byRecC=(a,b)=>(b.pu||b.di||b.fl||'').localeCompare(a.pu||a.di||a.fl||'');
+  const byRecC=compO==='completado'?((a,b)=>(b.hAt||b.pu||b.di||b.fl||'').localeCompare(a.hAt||a.pu||a.di||a.fl||'')):((a,b)=>(b.pu||b.di||b.fl||'').localeCompare(a.pu||a.di||a.fl||''));
   const tabsDef=[['__all','Todas',done.length],...Object.keys(GC).map(g=>[g,({Universidad:'Uni',WithDesign:'Diseño'})[g]||g,done.filter(o=>o.g===g).length])];
   const tabs=`<div class="seg" id="seg"><div class="segind" id="segind"></div>${tabsDef.map(([k,l,n])=>`<button class="segb ${compG===k?'on':''}" data-cg="${k}">${k!=='__all'?`<span class="dot" style="background:${gc(k)};display:inline-block;margin-right:4px"></span>`:''}${l}<span class="segn">${n}</span></button>`).join('')}</div>`;
   const PER=[['all','Todas las fechas'],['mes','Este mes'],];
-  const periodos=`<div style="display:flex;gap:6px;flex-wrap:wrap;margin:-8px 0 16px">${PER.map(([k,l])=>`<button class="btn ${compP===k?'on':''}" data-cp="${k}">${l}</button>`).join('')}<select class="btn ${compP==='n'?'on':''}" data-cn style="padding:6px 10px"><option value="">Últimos…</option>${[[1,'1 mes'],[2,'2 meses'],[3,'3 meses'],[6,'6 meses'],[12,'1 año'],[24,'2 años'],[36,'3 años']].map(([v,l])=>`<option value="${v}" ${compP==='n'&&compN===v?'selected':''}>${l}</option>`).join('')}</select></div>`;
+  const periodos=`<div style="display:flex;gap:6px;flex-wrap:wrap;margin:-8px 0 16px">${[['fecha','Por fecha de tarea'],['completado','Completado más reciente']].map(([k,l])=>`<button class="btn ${compO===k?'on':''}" data-co="${k}">${l}</button>`).join('')}${PER.map(([k,l])=>`<button class="btn ${compP===k?'on':''}" data-cp="${k}">${l}</button>`).join('')}<select class="btn ${compP==='n'?'on':''}" data-cn style="padding:6px 10px"><option value="">Últimos…</option>${[[1,'1 mes'],[2,'2 meses'],[3,'3 meses'],[6,'6 meses'],[12,'1 año'],[24,'2 años'],[36,'3 años']].map(([v,l])=>`<option value="${v}" ${compP==='n'&&compN===v?'selected':''}>${l}</option>`).join('')}</select></div>`;
   let body;
   if(compG==='__all'){
     body=[...Object.keys(GC),''].map(g=>{const rows=done.filter(o=>(o.g||'')===g).sort(byRecC);if(!rows.length)return '';return `<div class="grp"><span class="dot" style="background:${gc(g)}"></span>${g||'Sin grupo'} <span class="mut">${rows.length}</span></div>`+rows.map(o=>card(o)).join('')}).join('');
@@ -928,6 +928,7 @@ document.addEventListener('change',e=>{
 document.addEventListener('click',e=>{if(!e.target.closest('[data-pedit]'))return;pEdit=!pEdit;render()});
 document.addEventListener('change',e=>{if(e.target.dataset&&'cn' in e.target.dataset&&e.target.value){compP='n';compN=+e.target.value;render()}});
 document.addEventListener('click',e=>{const p=e.target.closest('[data-cp]');if(!p)return;compP=p.dataset.cp;render()});
+document.addEventListener('click',e=>{const p=e.target.closest('[data-co]');if(!p)return;compO=p.dataset.co;render()});
 document.addEventListener('click',e=>{const b=e.target.closest('[data-cg]');if(!b)return;compG=b.dataset.cg;render()});
 function taskIdFrom(el){
   let n=el;
@@ -962,7 +963,7 @@ document.addEventListener('click',e=>{
   const o=S.find(x=>x.id===id);if(!o)return;
   const a=b.dataset.cxa;
   if(a==='open')page=o.id;
-  else if(a==='done')o.h=!o.h;
+  else if(a==='done'){o.h=!o.h;o.hAt=o.h?ymd(hoyD):''}
   else if(a==='del'){if(!confirm(`¿Borrar "${o.t}"? No se puede deshacer.`))return;S=S.filter(x=>x.id!==id);if(page===id)page=null}
   else if(a==='pr'){const _prev=o.pr;o.pr=b.dataset.cxv;if(o.pr==='Subido'){o.h=true;};if(o.pr==='Por grabar'&&_prev==='Idea')askId=o.id}
   persist();render();
