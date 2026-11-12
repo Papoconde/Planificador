@@ -647,7 +647,14 @@ function completadoHtml(){
   const PER=[['all','Todas las fechas'],['mes','Este mes'],];
   const periodos=`<div style="display:flex;gap:6px;flex-wrap:wrap;margin:-8px 0 16px">${[['fecha','Por fecha de tarea'],['completado','Completado más reciente']].map(([k,l])=>`<button class="btn ${compO===k?'on':''}" data-co="${k}">${l}</button>`).join('')}${PER.map(([k,l])=>`<button class="btn ${compP===k?'on':''}" data-cp="${k}">${l}</button>`).join('')}<select class="btn ${compP==='n'?'on':''}" data-cn style="padding:6px 10px"><option value="">Últimos…</option>${[[1,'1 mes'],[2,'2 meses'],[3,'3 meses'],[6,'6 meses'],[12,'1 año'],[24,'2 años'],[36,'3 años']].map(([v,l])=>`<option value="${v}" ${compP==='n'&&compN===v?'selected':''}>${l}</option>`).join('')}</select></div>`;
   let body;
-  if(compG==='__all'){
+  if(compO==='completado'){
+    const hoyS=ymd(hoyD), yer=ymd(new Date(hoyD.getFullYear(),hoyD.getMonth(),hoyD.getDate()-1));
+    const dow=(hoyD.getDay()+6)%7, semS=ymd(new Date(hoyD.getFullYear(),hoyD.getMonth(),hoyD.getDate()-dow)), mesS=ymd(new Date(hoyD.getFullYear(),hoyD.getMonth(),1));
+    const bucket=d=>d===hoyS?'Hoy':d===yer?'Ayer':d>=semS?'Esta semana':d>=mesS?'Este mes':'Anteriores';
+    const sorted=done.filter(o=>compG==='__all'||o.g===compG).sort(byRecC);
+    let last='';
+    body=sorted.map(o=>{const b=bucket((o.hAt||o.pu||o.di||o.fl||'').slice(0,10));const h=b!==last?`<div class="grp">${b}</div>`:'';last=b;return h+card(o)}).join('')||`<p class="mut">Todavía no hay tareas completadas${compG!=='__all'?` de ${esc(compG)}`:''}.</p>`;
+  } else if(compG==='__all'){
     body=[...Object.keys(GC),''].map(g=>{const rows=done.filter(o=>(o.g||'')===g).sort(byRecC);if(!rows.length)return '';return `<div class="grp"><span class="dot" style="background:${gc(g)}"></span>${g||'Sin grupo'} <span class="mut">${rows.length}</span></div>`+rows.map(o=>card(o)).join('')}).join('');
   } else {
     const rows=done.filter(o=>o.g===compG).sort(byRecC);
@@ -1220,8 +1227,9 @@ document.addEventListener('pointerdown',e=>{
 },{passive:true});
 document.addEventListener('pointermove',e=>{
   if(!swDrag||e.pointerType!=='touch')return;
-  const dx=e.clientX-swDrag.x, dy=e.clientY-swDrag.y;
-  if(!swDrag.on){if(dx>12&&dx>Math.abs(dy)*1.5){swDrag.on=true;swDrag.el.style.transition='none';swDrag.el.setAttribute('data-swipe','1');swWrap(swDrag.el)}else return}
+  const rawdx=e.clientX-swDrag.x, dy=e.clientY-swDrag.y;
+  if(!swDrag.on){if(rawdx>12&&rawdx>Math.abs(dy)*1.5){swDrag.on=true;swDrag.el.style.transition='none';swDrag.el.setAttribute('data-swipe','1');swWrap(swDrag.el)}else return}
+  const dx=Math.max(0,rawdx);
   swDrag.dx=dx;
   const p=Math.max(0,Math.min(1,dx/120));
   swDrag.el.style.transform=`translateX(${Math.min(dx,200)}px)`;
