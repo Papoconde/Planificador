@@ -297,7 +297,7 @@ function toArr(o){return K.map(k=>k==='h'?(o.h?1:0):(o[k]||''))}
 function persist(){
   const data={rows:S.map(toArr)};
   try{localStorage.setItem('planner-v3',JSON.stringify(data))}catch(e){}
-  if(ref)ref.set(data).catch(()=>{});
+  if(sb&&sbUser)sbSave(data);
 }
 function saveSoon(){clearTimeout(tm);tm=setTimeout(persist,400)}
 const act=()=>S.filter(o=>!o.h);
@@ -806,25 +806,57 @@ document.addEventListener('dragover',e=>{if(e.target.closest('[data-drop]'))e.pr
 document.addEventListener('drop',e=>{const col=e.target.closest('[data-drop]');if(!col||!dragId)return;e.preventDefault();const o=S.find(x=>x.id===dragId);dragId=null;if(o){o.pr=col.dataset.drop;if(o.pr==='Subido')o.h=true;if(o.pr==='Por grabar')askId=o.id;persist();render()}});
 document.addEventListener('dragend',()=>{dragId=null});
 
+const SB_URL='https://yiwohanhksrlyfigztuc.supabase.co';
+const SB_KEY='sb_publishable_kTxOwyDJMoncWgtUBGhdFQ_2sfaKmjj';
+let sb=null,sbUser=null,sbTimer=null,lastSaved='';
+function sbSave(data){
+  const json=JSON.stringify(data);lastSaved=json;
+  clearTimeout(sbTimer);
+  sbTimer=setTimeout(()=>{
+    sb.from('planner_state').upsert({id:'main',data:data,updated_at:new Date().toISOString()})
+      .then(r=>{sync=r.error?'Error al guardar':'Sincronizado';render()})
+      .catch(()=>{sync='Error al guardar';render()});
+  },300);
+}
+function showLogin(msg){
+  document.body.insertAdjacentHTML('beforeend','<div class="ov" id="login"><div class="dlg2"><h3>📅 Planificador</h3><p class="mut" id="lmsg">'+(msg||'Entra con tu cuenta')+'</p><input id="lmail" class="wtxt" type="email" placeholder="Correo" style="margin:8px 0"><input id="lpass" class="wtxt" type="password" placeholder="Contraseña" style="margin:0 0 8px"><div class="wbtns" style="justify-content:center"><button class="btn pri" id="lgo">Entrar</button><button class="btn" id="lnew">Crear cuenta</button></div></div></div>');
+  const go=async(signup)=>{
+    const email=document.getElementById('lmail').value.trim(),password=document.getElementById('lpass').value;
+    const res=signup?await sb.auth.signUp({email,password}):await sb.auth.signInWithPassword({email,password});
+    if(res.error){document.getElementById('lmsg').textContent=res.error.message;return}
+    if(res.data&&res.data.session){document.getElementById('login').remove();afterLogin()}
+    else document.getElementById('lmsg').textContent='Revisa tu correo para confirmar la cuenta';
+  };
+  document.getElementById('lgo').onclick=()=>go(false);
+  document.getElementById('lnew').onclick=()=>go(true);
+}
+async function afterLogin(){
+  sbUser=(await sb.auth.getUser()).data.user;
+  const r=await sb.from('planner_state').select('data').eq('id','main').maybeSingle();
+  if(!r.error&&r.data&&r.data.data&&Array.isArray(r.data.data.rows)){
+    S=r.data.data.rows.map(fromArr);
+    try{localStorage.setItem('planner-v3',JSON.stringify(r.data.data))}catch(e){}
+  }
+  sync='Sincronizado';
+  render();
+  sb.channel('planner').on('postgres_changes',{event:'*',schema:'public',table:'planner_state'},payload=>{
+    const d=payload.new&&payload.new.data;
+    if(!d||!Array.isArray(d.rows)||JSON.stringify(d)===lastSaved)return;
+    S=d.rows.map(fromArr);
+    try{localStorage.setItem('planner-v3',JSON.stringify(d))}catch(e){}
+    render();
+  }).subscribe();
+}
 (async()=>{
   try{dark=localStorage.getItem('planner-theme')!=='light'}catch(e){}
   try{const s=JSON.parse(localStorage.getItem('planner-v3'));if(s&&Array.isArray(s.rows))S=s.rows.map(fromArr)}catch(e){}
   render();
-  let db=null;
-  try{db=window.claude?await claude.use('db'):null}catch(e){db=null}
-  if(db){
-    sync='Sincronizado';
-    ref=db.doc('state/v3');
-    ref.onSnapshot(snap=>{
-      const d=snap&&(typeof snap.data==='function'?snap.data():snap.data);
-      if(d&&Array.isArray(d.rows)){
-        S=d.rows.map(fromArr);
-        try{localStorage.setItem('planner-v3',JSON.stringify(d))}catch(e){}
-        render();
-      }
-    });
-    render();
-  }
+  try{
+    const m=await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+    sb=m.createClient(SB_URL,SB_KEY);
+  }catch(e){sync='Sin conexión: solo este dispositivo';render();return}
+  const {data:{session}}=await sb.auth.getSession();
+  if(session)afterLogin();else showLogin();
 })();
 function saveIdea(text){
   const clean=text.replace(/\s+/g,' ').trim();
