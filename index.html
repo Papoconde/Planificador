@@ -995,7 +995,7 @@ function renderSummary(ks){
   const old=document.getElementById('wiz');if(old)old.remove();
   const o=wiz.o;
   const rows=ks.map(k=>`<div class="sumrow"><span class="mut">${P[k].l}</span><b>${esc(o[k]||'—')}</b></div>`).join('');
-  document.body.insertAdjacentHTML('beforeend',`<div class="ov" id="wiz"><div class="wdlg"><div class="mut">Resumen</div><h2 class="wq">${esc(o.t||'Sin título')}</h2><div class="sumlist">${rows}</div><button class="wx" data-wcancel>✕</button><div class="wnav"><button class="wArr" data-wback title="Atrás">←</button><span class="wsum">Revisa y confirma</span><button class="wArr wArrP wtxtb" data-wcreate>Crear ✓</button></div></div></div>`);
+  document.body.insertAdjacentHTML('beforeend',`<div class="ov" id="wiz"><div class="wdlg"><div class="mut">Resumen</div><h2 class="wq">${esc(o.t||'Sin título')}</h2><div class="sumlist">${rows}</div><button class="wx" data-wcancel>✕</button><div class="wnav"><button class="wArr" data-wback title="Atrás">←</button>${o.pr==='Idea'?'':'<span class="wsum">Revisa y confirma</span>'}<button class="wArr wArrP wtxtb" data-wcreate>${o.pr==='Idea'?'Guardar ✓':'Crear ✓'}</button></div></div></div>`);
   {const _e=document.getElementById('wiz');if(_e)_e.innerHTML=noEmo(_e.innerHTML);}
 }
 function renderWiz(){
