@@ -432,6 +432,8 @@ body.dark .wdlg .sumrow{background:#2a2a2a}
 /* asistente: la caja tiene altura fija y los botones quedan abajo, así no se mueven al cambiar de paso */
 .wdlg{display:flex;flex-direction:column;height:min(540px,88vh);max-height:88vh;overflow:auto}
 .wdlg .wbtns{margin-top:auto;padding-top:14px}
+/* opciones del asistente: separación entre icono y texto */
+.wopt svg{margin-right:6px;vertical-align:-3px}
 </style>
 </head>
 <body>
@@ -1005,7 +1007,7 @@ function renderWiz(){
   if(wiz.i>=ks.length)return renderSummary(ks);
   const k=ks[wiz.i], p=P[k], o=wiz.o, last=wiz.i>=ks.length-1;
   let ctl;
-  if(p.type==='sel')ctl=`<div class="wopts">${L[k].map(v=>`<button class="wopt ${o[k]===v?'on':''}" data-wopt="${k}" data-wv="${esc(v)}">${esc(({Entrega:"📤 Entrega",Opcional:"⚪ Opcional",Reel:"🎬 Reel",Carrusel:"🖼 Carrusel"})[v]||v)}</button>`).join('')}${k==='g'?'<button class="wopt" data-voice>Idea</button>':''}</div>`;
+  if(p.type==='sel')ctl=`<div class="wopts">${L[k].map(v=>`<button class="wopt ${o[k]===v?'on':''}" data-wopt="${k}" data-wv="${esc(v)}">${({Entrega:'upload',Opcional:'opt',Reel:'clap',Carrusel:'image'})[v]?ico(({Entrega:'upload',Opcional:'opt',Reel:'clap',Carrusel:'image'})[v],16)+' ':''}${esc(v)}</button>`).join('')}${k==='g'?'<button class="wopt" data-voice>Idea</button>':''}</div>`;
   else if(k==='fr')ctl=frCtl(o,'w');
   else if(p.type==='area'||p.type==='pagina')ctl=`<textarea class="wtxt" rows="4" data-wkey="${k}">${esc(o[k]||'')}</textarea>`;
   else if(p.type==='date')ctl=`<input type="date" class="wtxt" data-wkey="${k}" value="${esc((o[k]||'').slice(0,10))}">`;
