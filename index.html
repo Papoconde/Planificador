@@ -681,15 +681,16 @@ function almacenamientoKB(){
 }
 function ajustesHtml(){
   const perf=perfilCfg();
-  const kb=almacenamientoKB(), cuota=5*1024, pct=Math.min(100,Math.round(kb/cuota*100));
-  const txt=kb<1024?`${kb.toFixed(1)} KB`:`${(kb/1024).toFixed(2)} MB`;
+  const kb=almacenamientoKB(), cuota=5*1024, libre=Math.max(0,cuota-kb), pctL=Math.max(0,Math.min(100,Math.round(libre/cuota*100)));
+  const fmt=k=>k<1024?`${k.toFixed(1)} KB`:`${(k/1024).toFixed(2)} MB`;
+  const txt=fmt(libre);
   return `<button class="btn" data-sec="resumen" style="margin-bottom:14px">← Volver</button><h1>Ajustes</h1><div class="sub">Preferencias de este dispositivo</div>
     <div class="grp">Apariencia</div>
     <div class="cardbox" style="display:flex;justify-content:space-between;align-items:center;gap:12px"><span>Modo oscuro</span><button class="btn ${dark?'on':''}" data-theme>${dark?'Activado':'Desactivado'}</button></div>
     <div class="grp" style="margin-top:18px">Perfil</div>
     <div class="cardbox" style="display:grid;gap:12px"><label style="display:grid;gap:6px"><span class="mut">Nombre</span><input class="wtxt" style="margin:0" data-pnombre value="${esc(perf.nombre)}" placeholder="Tu nombre"></label><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><label class="btn" style="cursor:pointer">Cambiar foto<input type="file" accept="image/*" data-pfoto style="display:none"></label>${perf.foto?'<button class="btn del" data-pquitar>Quitar foto</button>':''}</div></div>
     <div class="grp" style="margin-top:18px">Almacenamiento</div>
-    <div class="cardbox" style="display:grid;gap:10px"><div style="display:flex;justify-content:space-between;align-items:baseline"><b>${txt}</b><span class="mut">de unos 5 MB</span></div><div style="height:8px;background:#e6e5e1;border-radius:8px;overflow:hidden"><div style="height:100%;width:${Math.max(pct,1)}%;background:linear-gradient(90deg,#ffffff,#8fb8ff)"></div></div><span class="mut" style="font-size:12px">Espacio que usa la app en este navegador. Los datos de la nube no se cuentan aquí.</span></div>`;
+    <div class="cardbox" style="display:grid;gap:10px"><div style="display:flex;justify-content:space-between;align-items:baseline"><b>Libre: ${txt}</b><span class="mut">de unos 5 MB · usados ${fmt(kb)}</span></div><div style="height:8px;background:#e6e5e1;border-radius:8px;overflow:hidden"><div style="height:100%;width:${Math.max(pctL,1)}%;background:linear-gradient(90deg,#ffffff,#8fb8ff)"></div></div><span class="mut" style="font-size:12px">Espacio libre que le queda a la app en este navegador. Los datos de la nube no se cuentan aquí.</span></div>`;
 }
 
 function cardDate(o){const d=new Date(o.fl.slice(0,10)+'T12:00:00');const mon=d.toLocaleDateString('es-ES',{month:'short'}).replace('.','');return `<div class="item ${o.h?'done':''}" style="border-left:4px solid ${ccol(o)};align-items:center"><input type="checkbox" data-h="${o.id}" ${o.h?'checked':''}><div class="dbadge"><b>${d.getDate()}</b><span>${esc(mon)}</span></div><div style="flex:1;min-width:0"><a class="tt" data-open="${o.id}">${ticon(o)}${esc(String(o.t||'Sin título').replace(/^\s*(⏩|📤|⚪)\s*/,''))}</a><div class="meta">${o.a?`<span class="pill">${esc(o.a)}</span>`:''}${ppill(o)}</div></div></div>`}
