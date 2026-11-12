@@ -752,7 +752,11 @@ function cardDate(o){const d=new Date(o.fl.slice(0,10)+'T12:00:00');const mon=d.
 function semanaTabla(){
   const dias=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
   const rows=act().filter(inWeek).map(o=>({o,v:(o.di||o.fl||'').slice(0,10)})).sort((a,b)=>a.v.localeCompare(b.v)||(a.o.fr||'').localeCompare(b.o.fr||''));
-  const porDia=dias.map((nombre,i)=>{const d=new Date(mon+'T12:00:00');d.setDate(d.getDate()+i);const key=ymd(d);const items=rows.filter(x=>x.v===key);if(key<ymd(hoyD)&&!items.length)return '';return `<div class="wkday ${key<ymd(hoyD)?'past':''} ${key===ymd(hoyD)?'hoy':''}"><div class="wkhead"><b>${nombre}</b><span>${d.getDate()}</span></div>${GCAL.filter(e=>e.d===key).map(e=>`<div class="gev">📅 ${esc(e.t)} <span>${esc(e.h)}</span></div>`).join('')}${key<ymd(hoyD)?`<details><summary class="wksum">${items.length} ${items.length===1?'tarea':'tareas'}</summary>${items.map(x=>card(x.o,true)).join('')}</details>`:(items.map(x=>card(x.o,true)).join('')||'<span class="mut">Libre</span>')}</div>`}).join('');
+  const hk=s=>{const m=String(s||'').match(/(\d{1,2}):(\d{2})/);return m?(+m[1])*60+(+m[2]):(/todo el d/i.test(String(s||''))?-1:9999)};
+  const porDia=dias.map((nombre,i)=>{const d=new Date(mon+'T12:00:00');d.setDate(d.getDate()+i);const key=ymd(d);const tareas=rows.filter(x=>x.v===key);const evs=GCAL.filter(e=>e.d===key);if(key<ymd(hoyD)&&!tareas.length&&!evs.length)return '';
+    const ents=[...evs.map(e=>({k:hk(e.h),html:`<div class="gev">📅 ${esc(e.t)} <span>${esc(e.h)}</span></div>`})),...tareas.map(x=>({k:hk(x.o.fr),html:card(x.o,true)}))].sort((a,b)=>a.k-b.k);
+    const inner=ents.map(x=>x.html).join('')||'<span class="mut">Libre</span>';
+    return `<div class="wkday ${key<ymd(hoyD)?'past':''} ${key===ymd(hoyD)?'hoy':''}"><div class="wkhead"><b>${nombre}</b><span>${d.getDate()}</span></div>${key<ymd(hoyD)?`<details><summary class="wksum">${tareas.length} ${tareas.length===1?'tarea':'tareas'}</summary>${inner}</details>`:inner}</div>`}).join('');
   return `<h1>🔔 Esta semana</h1><div class="sub">Del ${fmtD(mon)} al ${fmtD(sun)} · ${new Set(rows.map(x=>x.v)).size} días con tareas · ${rows.length} pendientes</div><div class="wkgrid">${porDia}</div>`;
 }
 function semanaTablaOld(){
