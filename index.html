@@ -876,6 +876,9 @@ const EMO={'⚪':'opt','⏩':'fwd','📅':'cal','📆':'cal','🎬':'clap','💡
 function ico(name,size){const z=size||16;return `<svg viewBox="0 0 24 24" width="${z}" height="${z}" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px" aria-hidden="true">${ICONS[name]||''}</svg>`}
 function noEmo(h){return h.replace(/(<[^>]*>)|([^<]+)/g,(m,tag,txt)=>tag?tag:txt.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{23E9}]\uFE0F?/gu,(e)=>{const k=EMO[e.replace(/\uFE0F/g,'')];return k?ico(k):''}))}
 function render(){
+  const _home=!page&&section==='resumen';
+  if(_home&&!window.__wasHome)window.__tg=false;
+  window.__wasHome=_home;
   document.getElementById('sync').textContent=sync;
   document.getElementById('nav').innerHTML=SECS.map(([k,i,l])=>`<button class="nav ${!page&&section===k?'on':''}" data-sec="${k}"><span class="ico">${i}</span><span class="lbl"> ${l}</span></button>`).join('')+``;
   const o=page&&S.find(x=>x.id===page);
