@@ -443,7 +443,7 @@ function semanaHtml(){
     const d=new Date(mon+'T12:00:00');d.setDate(d.getDate()+i);
     const key=ymd(d);
     const items=rows.filter(o=>((o.di||o.fl||'').slice(0,10))===key).sort((a,b)=>(a.fr||'').localeCompare(b.fr||''));
-    return `<div class="day"><h4>${nombre} ${d.getDate()}</h4>${items.map(card).join('')||'<span class="mut">—</span>'}</div>`;
+    return `<div class="day"><h4>${nombre} ${d.getDate()}</h4>${items.map(o=>card(o)).join('')||'<span class="mut">—</span>'}</div>`;
   }).join('');
   return `<h1>🔔 Esta semana</h1><div class="sub">Del ${fmtD(mon)} al ${fmtD(sun)}</div><div class="grid7">${cols}</div>`;
 }
@@ -460,7 +460,7 @@ function statsTodo(){
 }
 function recienteHtml(){
   const rows=act().filter(o=>o.pr!=='Idea'&&filtGrupo(o)).reverse();
-  return `<h1>✅ To Do</h1><div class="sub">${rows.length} tareas · las últimas que añadiste, arriba</div>${todoSeg()}`+statsTodo()+(rows.map(card).join('')||'<p class="mut">No hay tareas con este filtro.</p>');
+  return `<h1>✅ To Do</h1><div class="sub">${rows.length} tareas · las últimas que añadiste, arriba</div>${todoSeg()}`+statsTodo()+(rows.map(o=>card(o)).join('')||'<p class="mut">No hay tareas con este filtro.</p>');
 }
 function todoHtml(){
   if(todoOrden==='reciente')return recienteHtml();
@@ -474,7 +474,7 @@ function todoHtml(){
       if(!list.length)return '';
       return `<div class="grp"><span class="dot" style="background:${gc(g)}"></span>${g||'Sin grupo'} <span class="mut">${list.length}</span>
         <button class="btn" style="margin-left:auto" data-newg="${g}">＋ añadir</button></div>`+
-        (list.map(card).join('')||'<p class="mut">Sin tareas.</p>');
+        (list.map(o=>card(o)).join('')||'<p class="mut">Sin tareas.</p>');
     }).join('');
 }
 
@@ -497,7 +497,7 @@ function agendaHtml(){
   if(!selDay)return '<p class="mut" style="margin-top:14px">Toca un día para ver sus tareas.</p>';
   const list=act().filter(o=>(o.di||'').slice(0,10)===selDay).sort((a,b)=>(a.fr||'').localeCompare(b.fr||''));
   const d=new Date(selDay+'T12:00:00');
-  return `<div class="grp" style="margin-top:18px;text-transform:capitalize">${d.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'})} <button class="btn" style="margin-left:auto" data-newday="${selDay}">＋ tarea</button></div>`+GCAL.filter(e=>e.d===selDay).map(e=>`<div class="gev" style="margin-top:8px">📅 ${esc(e.t)} <span>${esc(e.h)}</span></div>`).join('')+(list.map(card).join('')||'<p class="mut">Nada este día.</p>');
+  return `<div class="grp" style="margin-top:18px;text-transform:capitalize">${d.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'})} <button class="btn" style="margin-left:auto" data-newday="${selDay}">＋ tarea</button></div>`+GCAL.filter(e=>e.d===selDay).map(e=>`<div class="gev" style="margin-top:8px">📅 ${esc(e.t)} <span>${esc(e.h)}</span></div>`).join('')+(list.map(o=>card(o)).join('')||'<p class="mut">Nada este día.</p>');
 }
 function redesHtml(){
   const redes=act().filter(o=>o.g==='Redes');
@@ -536,10 +536,10 @@ function completadoHtml(){
   const periodos=`<div style="display:flex;gap:6px;flex-wrap:wrap;margin:-8px 0 16px">${PER.map(([k,l])=>`<button class="btn ${compP===k?'on':''}" data-cp="${k}">${l}</button>`).join('')}<select class="btn ${compP==='n'?'on':''}" data-cn style="padding:6px 10px"><option value="">Últimos…</option>${[[1,'1 mes'],[2,'2 meses'],[3,'3 meses'],[6,'6 meses'],[12,'1 año'],[24,'2 años'],[36,'3 años']].map(([v,l])=>`<option value="${v}" ${compP==='n'&&compN===v?'selected':''}>${l}</option>`).join('')}</select></div>`;
   let body;
   if(compG==='__all'){
-    body=[...Object.keys(GC),''].map(g=>{const rows=done.filter(o=>(o.g||'')===g);if(!rows.length)return '';return `<div class="grp"><span class="dot" style="background:${gc(g)}"></span>${g||'Sin grupo'} <span class="mut">${rows.length}</span></div>`+rows.map(card).join('')}).join('');
+    body=[...Object.keys(GC),''].map(g=>{const rows=done.filter(o=>(o.g||'')===g);if(!rows.length)return '';return `<div class="grp"><span class="dot" style="background:${gc(g)}"></span>${g||'Sin grupo'} <span class="mut">${rows.length}</span></div>`+rows.map(o=>card(o)).join('')}).join('');
   } else {
     const rows=done.filter(o=>o.g===compG).sort(byFl);
-    body=rows.map(card).join('')||`<p class="mut">Todavía no hay tareas completadas de ${esc(compG)}.</p>`;
+    body=rows.map(o=>card(o)).join('')||`<p class="mut">Todavía no hay tareas completadas de ${esc(compG)}.</p>`;
   }
   return `<h1>🏁 Completado</h1><div class="sub">${done.length} tareas hechas · desmarca una para devolverla a To Do</div>${tabs}${periodos}${body}`;
 }
@@ -549,7 +549,7 @@ function completadoHtmlOld(){
     [...Object.keys(GC),''].map(g=>{
       const rows=done.filter(o=>(o.g||'')===g);
       if(!rows.length)return '';
-      return `<div class="grp"><span class="dot" style="background:${gc(g)}"></span>${g||'Sin grupo'} <span class="mut">${rows.length}</span></div>`+rows.map(card).join('');
+      return `<div class="grp"><span class="dot" style="background:${gc(g)}"></span>${g||'Sin grupo'} <span class="mut">${rows.length}</span></div>`+rows.map(o=>card(o)).join('');
     }).join('');
 }
 
@@ -591,7 +591,7 @@ function resumenHtmlOld(){
     <div style="height:10px;background:#efefed;border-radius:99px;overflow:hidden;margin:0 0 18px"><span style="display:block;height:100%;width:${pct}%;background:#0f7b6c;border-radius:99px"></span></div>
     <div class="stats">${stat(semana,'tareas esta semana','#2383e2')}${stat(activas.length,'pendientes','#37352f')}${stat(hechas.length,'hechas','#0f7b6c')}${stat(subidos,'vídeos subidos','#d44c8f')}${stat(grabar,'por grabar','#d9a20f')}${stat(ideas,'ideas','#8e6fd6')}</div>
     <div class="grp">⏰ Próximas fechas</div>
-    ${proximas.map(card).join('')||'<p class="mut">No tienes fechas límite pendientes.</p>'}${settingsHtml()}`;
+    ${proximas.map(o=>card(o)).join('')||'<p class="mut">No tienes fechas límite pendientes.</p>'}${settingsHtml()}`;
 }
 function settingsHtml(){
   return `<div class="grp" style="margin-top:26px">⚙️ Ajustes</div>
