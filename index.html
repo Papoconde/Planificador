@@ -535,7 +535,7 @@ function card(o,hora){
   const badge=(hora)?'':fd?`<div class="dbadge"><b>${fd.getDate()}</b><span>${esc(fd.toLocaleDateString('es-ES',{month:'short'}).replace('.',''))}</span></div>`:`<div class="dbadge"><b>—</b><span>sin</span></div>`;
   const strip=(o.g||o.a)?`border-left:4px solid ${ccol(o)};`:'';
   return `<div class="item ${o.h?'done':''}" style="${strip}align-items:center">
-    <input type="checkbox" data-h="${o.id}" ${o.h?'checked':''}>${badge}
+    ${o.h?`<input type="checkbox" data-h="${o.id}" checked>`:''}${badge}
     <div style="flex:1;min-width:0"><a class="tt" data-open="${o.id}">${ticon(o)}${esc(String(o.t||'Sin título').replace(/^\s*(⏩|📤|⚪)\s*/,''))}</a>
     <div class="meta">${o.a?`<span class="pill">${esc(o.a)}</span>`:''}${ppill(o)}${o.pr?`<span class="pill" style="background:${PRC[o.pr]||'#efefed'}22">${esc(o.pr)}</span>`:''}${hora&&o.fr?`<span class="pill">🕒 ${esc(o.fr)}</span>`:''}</div></div></div>`;
 }
@@ -747,7 +747,7 @@ function ajustesHtml(){
     <div class="cardbox" style="display:grid;gap:10px"><div style="display:flex;justify-content:space-between;align-items:baseline"><b>Usado: ${txt}</b><span class="mut">de unos 5 MB</span></div><div style="height:16px;background:rgba(0,0,0,.35);border-radius:16px;overflow:hidden"><div style="height:100%;width:${Math.max(pctU,1)}%;border-radius:16px;background:linear-gradient(90deg,#2c4a75,#5f88c4)"></div></div><span class="mut" style="font-size:12px">Espacio que ocupa la app en este navegador. Los datos de la nube no se cuentan aquí.</span></div>`;
 }
 
-function cardDate(o){const d=new Date(o.fl.slice(0,10)+'T12:00:00');const mon=d.toLocaleDateString('es-ES',{month:'short'}).replace('.','');return `<div class="item ${o.h?'done':''}" style="border-left:4px solid ${ccol(o)};align-items:center"><input type="checkbox" data-h="${o.id}" ${o.h?'checked':''}><div class="dbadge"><b>${d.getDate()}</b><span>${esc(mon)}</span></div><div style="flex:1;min-width:0"><a class="tt" data-open="${o.id}">${ticon(o)}${esc(String(o.t||'Sin título').replace(/^\s*(⏩|📤|⚪)\s*/,''))}</a><div class="meta">${o.a?`<span class="pill">${esc(o.a)}</span>`:''}${ppill(o)}</div></div></div>`}
+function cardDate(o){const d=new Date(o.fl.slice(0,10)+'T12:00:00');const mon=d.toLocaleDateString('es-ES',{month:'short'}).replace('.','');return `<div class="item ${o.h?'done':''}" style="border-left:4px solid ${ccol(o)};align-items:center">${o.h?`<input type="checkbox" data-h="${o.id}" checked>`:''}<div class="dbadge"><b>${d.getDate()}</b><span>${esc(mon)}</span></div><div style="flex:1;min-width:0"><a class="tt" data-open="${o.id}">${ticon(o)}${esc(String(o.t||'Sin título').replace(/^\s*(⏩|📤|⚪)\s*/,''))}</a><div class="meta">${o.a?`<span class="pill">${esc(o.a)}</span>`:''}${ppill(o)}</div></div></div>`}
 function semanaTabla(){
   const dias=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
   const rows=act().filter(inWeek).map(o=>({o,v:(o.di||o.fl||'').slice(0,10)})).sort((a,b)=>a.v.localeCompare(b.v)||(a.o.fr||'').localeCompare(b.o.fr||''));
@@ -762,7 +762,7 @@ function semanaTablaOld(){
   const weekStats=`<div class="stats"><div class="stat"><b>${rows.length}</b><span>tareas esta semana</span></div><div class="stat"><b style="color:${GC.Redes}">${rows.filter(x=>x.o.g==='Redes').length}</b><span>de Redes</span></div><div class="stat"><b>${new Set(rows.map(x=>x.v)).size}</b><span>días con tareas</span></div></div>`;
   return `<h1>🔔 Esta semana</h1><div class="sub">Del ${fmtD(mon)} al ${fmtD(sun)} · ordenado por día</div>`+
     `<div class="thead" style="${cols}"><span>Día</span><span>Tarea</span><span>Grupo</span><span>Franja</span><span>Prioridad</span></div>`+
-    weekStats+(rows.map(({o,v})=>`<div class="trow wk" style="${cols};border-left:4px solid ${gc(o.g)}"><span style="font-weight:600">${esc(diaNombre(v))}</span><div style="display:flex;gap:8px;align-items:center"><input type="checkbox" data-h="${o.id}" ${o.h?'checked':''}><a class="tt" data-open="${o.id}">${esc(o.t||'Sin título')}</a></div><span><span class="pill" style="background:${gc(o.g)}22">${esc(o.g||'—')}</span></span><span class="mut">${esc(o.fr||'—')}</span><span class="mut">${esc(o.p||'—')}</span></div>`).join('')||'<p class="mut">Nada programado esta semana.</p>');
+    weekStats+(rows.map(({o,v})=>`<div class="trow wk" style="${cols};border-left:4px solid ${gc(o.g)}"><span style="font-weight:600">${esc(diaNombre(v))}</span><div style="display:flex;gap:8px;align-items:center">${o.h?`<input type="checkbox" data-h="${o.id}" checked>`:''}<a class="tt" data-open="${o.id}">${esc(o.t||'Sin título')}</a></div><span><span class="pill" style="background:${gc(o.g)}22">${esc(o.g||'—')}</span></span><span class="mut">${esc(o.fr||'—')}</span><span class="mut">${esc(o.p||'—')}</span></div>`).join('')||'<p class="mut">Nada programado esta semana.</p>');
 }
 const PRI={Idea:'💡','Por grabar':'🎬',Grabado:'📹',Editado:'✂️',Subido:'🚀'};
 let resFiltro=null;
@@ -1220,15 +1220,15 @@ function swReset(el){
 }
 document.addEventListener('pointerdown',e=>{
   if(e.pointerType!=='touch')return;
-  const el=e.target.closest('.item');
-  if(!el||el.closest('.kanban')||e.target.closest('select,textarea,button,input:not([type=checkbox])'))return;
-  const cb=el.querySelector('input[type=checkbox][data-h]');if(!cb)return;
-  swDrag={el,cb,x:e.clientX,y:e.clientY,on:false,dx:0};
+  const el=e.target.closest('.item,.trow.wk');
+  if(!el||el.closest('.kanban')||el.classList.contains('done')||e.target.closest('select,textarea,button,input:not([type=checkbox])'))return;
+  const oa=el.querySelector('[data-open]');if(!oa)return;
+  swDrag={el,id:oa.dataset.open,x:e.clientX,y:e.clientY,on:false,dx:0};
 },{passive:true});
 document.addEventListener('pointermove',e=>{
   if(!swDrag||e.pointerType!=='touch')return;
   const rawdx=e.clientX-swDrag.x, dy=e.clientY-swDrag.y;
-  if(!swDrag.on){if(rawdx>12&&rawdx>Math.abs(dy)*1.5){swDrag.on=true;swDrag.el.style.transition='none';swDrag.el.setAttribute('data-swipe','1');swWrap(swDrag.el)}else return}
+  if(!swDrag.on){if(rawdx>12&&rawdx>Math.abs(dy)*1.5){swDrag.on=true;swDrag.el.style.transition='none';swDrag.el.setAttribute('data-swipe','1');if(swDrag.el.classList.contains('item'))swWrap(swDrag.el)}else return}
   const dx=Math.max(0,rawdx);
   swDrag.dx=dx;
   const p=Math.max(0,Math.min(1,dx/120));
@@ -1240,13 +1240,13 @@ function swEnd(){
   if(!d.on)return;
   if(d.dx>=110){
     d.el.style.transition='transform .25s ease';d.el.style.transform='translateX(110%)';
-    const id=d.cb.dataset.h;const was=d.cb.checked;
-    setTimeout(()=>{d.cb.click();showSwToast(id,was)},150);
+    const id=d.id;
+    setTimeout(()=>{const o=S.find(x=>x.id===id);if(o){o.h=true;o.hAt=ymd(hoyD);persist();render()}showSwToast(id)},150);
   }else{swReset(d.el)}
 }
 document.addEventListener('pointerup',swEnd);
 document.addEventListener('pointercancel',()=>{if(swDrag){swReset(swDrag.el);swDrag=null}});
-function showSwToast(id,was){
+function showSwToast(id){
   document.querySelectorAll('.swtoast').forEach(x=>x.remove());
   const t=document.createElement('div');t.className='swtoast';
   t.innerHTML='<span>Tarea completada</span><button data-swundo>Deshacer</button>';
