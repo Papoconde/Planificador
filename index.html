@@ -631,7 +631,7 @@ document.addEventListener('click',e=>{
   if('fmt' in d){const o=S.find(x=>x.id===askId);if(o)o.f=d.fmt;askId=null;persist();return render()}
   if('fmtcancel' in d){askId=null;return render()}
   if('back' in d){page=null;return render()}
-  if('del' in d){S=S.filter(x=>x.id!==d.del);page=null;persist();return render()}
+  if('del' in d){const di=S.find(x=>x.id===d.del);if(!confirm(`¿Borrar "${di?di.t:'esta tarea'}"? No se puede deshacer.`))return;S=S.filter(x=>x.id!==d.del);page=null;persist();return render()}
   if('month' in d){calM+=+d.month;if(calM<0){calM=11;calY--}if(calM>11){calM=0;calY++}return render()}
   if('selday' in d){selDay=d.selday;return render()}
   if('newday' in d)return startWiz({di:d.newday});
@@ -716,7 +716,7 @@ document.addEventListener('click',e=>{
   const a=b.dataset.cxa;
   if(a==='open')page=o.id;
   else if(a==='done')o.h=!o.h;
-  else if(a==='del'){S=S.filter(x=>x.id!==id);if(page===id)page=null}
+  else if(a==='del'){if(!confirm(`¿Borrar "${o.t}"? No se puede deshacer.`))return;S=S.filter(x=>x.id!==id);if(page===id)page=null}
   else if(a==='pr'){o.pr=b.dataset.cxv;if(o.pr==='Subido')o.h=true;if(o.pr==='Por grabar')askId=o.id}
   persist();render();
 });
