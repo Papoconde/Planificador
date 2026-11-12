@@ -611,7 +611,7 @@ function redesHtml(){
       (L.pr.filter(p=>showIdeas||p!=='Idea').map(p=>{const rs=redes.filter(o=>o.pr===p);if(!rs.length)return '';return `<div class="grp"><span class="dot" style="background:${PRC[p]}"></span>${PRI[p]} ${p} <span class="mut">${rs.length}</span></div>`+rs.map(o=>`<div class="trow" style="border-left:4px solid ${PRC[p]}"><a class="tt" data-open="${o.id}">${esc(o.t||'Sin título')}</a><div>${selInl(o,'pr',L.pr)}</div><div>${o.f?`<span class="pill">${esc(o.f)}</span>`:'<span class="mut">—</span>'}</div><div class="mut">${esc(fmtD(o.pu))||'—'}</div></div>`).join('')}).join('')||'<p class="mut">Sin vídeos.</p>');
   } else {
     body=`<div class="kanban">${L.pr.map(col=>{
-      const items=redes.filter(o=>o.pr===col && (col!=='Subido'||(o.pu&&o.pu.slice(0,7)===ymd(hoyD).slice(0,7))));
+      const items=redes.filter(o=>o.pr===col && (col!=='Subido'||(o.pu&&o.pu.slice(0,7)===ymd(hoyD).slice(0,7)))).sort((a,b)=>col==='Subido'?(b.pu||'').localeCompare(a.pu||''):0);
       if(col==='Idea'&&!showIdeas)return '';
       const oculta=false;
       const btn='';
