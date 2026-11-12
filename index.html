@@ -896,23 +896,27 @@ async function startVoice(){
     hint.textContent='Tu navegador no tiene dictado. Escribe la idea aquí.';
     return;
   }
-  let finalT='',live='';
-  const show=()=>{const el=document.getElementById('vtxt');if(el)el.textContent=(finalT+live).trim()};
-  const finish=()=>{if(!document.getElementById('voice'))return;const t=(finalT+live).trim();closeVoice();if(t)saveIdea(t)};
+  const VS=window.VS||(window.VS={finalT:'',live:'',on:false});
+  VS.finalT='';VS.live='';VS.on=false;
+  const show=()=>{const el=document.getElementById('vtxt');if(el)el.textContent=(VS.finalT+VS.live).trim()};
+  const finish=()=>{if(!VS.on)return;VS.on=false;const t=(VS.finalT+VS.live).trim();closeVoice();if(t)saveIdea(t)};
+  window.VS_show=show;window.VS_finish=finish;
   let down,up;
   if(dict){
-    dict.onPartial(({text})=>{live=text;show()});
-    dict.onFinal(({text})=>{finalT+=text+' ';live='';show()});
-    dict.onState(({state})=>{if(state==='idle')finish()});
-    down=e=>{e.preventDefault();finalT='';live='';btn.style.background='#b03a78';hint.textContent='Te escucho… suelta para guardar';dict.start().catch(()=>manual())};
+    if(!dict._wired){dict._wired=true;
+      dict.onPartial(({text})=>{VS.live=text;if(window.VS_show)window.VS_show()});
+      dict.onFinal(({text})=>{VS.finalT+=text+' ';VS.live='';if(window.VS_show)window.VS_show()});
+      dict.onState(({state})=>{if(state==='idle'&&window.VS_finish)window.VS_finish()});
+    }
+    down=e=>{e.preventDefault();VS.finalT='';VS.live='';VS.on=true;btn.style.background='#b03a78';hint.textContent='Te escucho… suelta para guardar';dict.start().catch(()=>{VS.on=false;manual()})};
     up=()=>{btn.style.background='#d44c8f';dict.stop().catch(()=>{})};
   } else {
     const rec=new SR();rec.lang='es-ES';rec.continuous=true;rec.interimResults=true;
     voiceRec=rec;
-    rec.onresult=ev=>{let it='';for(let i=ev.resultIndex;i<ev.results.length;i++){const r=ev.results[i];if(r.isFinal)finalT+=r[0].transcript+' ';else it+=r[0].transcript}live=it;show()};
+    rec.onresult=ev=>{let it='';for(let i=ev.resultIndex;i<ev.results.length;i++){const r=ev.results[i];if(r.isFinal)VS.finalT+=r[0].transcript+' ';else it+=r[0].transcript}VS.live=it;show()};
     rec.onend=finish;
-    rec.onerror=e=>{const c=e&&e.error;if(c==='not-allowed'||c==='service-not-allowed'){manual();return}hint.textContent=c==='network'?'Sin conexión para el dictado, escribe la idea':c==='aborted'?'Mantén pulsado un poco más':'No te he oído, prueba otra vez'};
-    down=e=>{e.preventDefault();finalT='';live='';btn.style.background='#b03a78';hint.textContent='Te escucho… suelta para guardar';try{rec.start()}catch(err){}};
+    rec.onerror=e=>{const c=e&&e.error;if(c==='not-allowed'||c==='service-not-allowed'){VS.on=false;manual();return}hint.textContent=c==='network'?'Sin conexión para el dictado, escribe la idea':c==='aborted'?'Mantén pulsado un poco más':'No te he oído, prueba otra vez'};
+    down=e=>{e.preventDefault();VS.finalT='';VS.live='';VS.on=true;btn.style.background='#b03a78';hint.textContent='Te escucho… suelta para guardar';try{rec.start()}catch(err){}};
     up=()=>{btn.style.background='#d44c8f';try{rec.stop()}catch(err){}};
   }
   btn.addEventListener('pointerdown',down);
