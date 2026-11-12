@@ -400,10 +400,13 @@ body.dark .wdlg .sumrow{background:#2a2a2a}
 
 /* PC: barra lateral como antes; el contenido con la misma columna y diseño que el móvil */
 @media(min-width:701px){
-  .main{max-width:560px;margin:0 auto}
+  .main{max-width:none;margin:0;padding-left:34px;padding-right:34px}
   .stats{grid-template-columns:repeat(2,minmax(0,1fr))!important}
   .stats .stat:last-child:nth-child(odd){grid-column:1/-1}
 }
+
+/* PC: iconos y textos del menú lateral alineados en la misma línea */
+@media(min-width:701px){.side .nav{display:flex;align-items:center;gap:10px}.side .nav .ico{display:flex;align-items:center;justify-content:center;flex-shrink:0}}
 
 /* PC: saludo grande y bien ajustado dentro de la columna */
 @media(min-width:701px){.hero-h{font-size:58px;line-height:1.02;word-spacing:.04em}.hero{padding:26px 26px 22px}}
@@ -690,7 +693,7 @@ function ajustesHtml(){
     <div class="grp" style="margin-top:18px">Perfil</div>
     <div class="cardbox" style="display:grid;gap:12px"><label style="display:grid;gap:6px"><span class="mut">Nombre</span><input class="wtxt" style="margin:0" data-pnombre value="${esc(perf.nombre)}" placeholder="Tu nombre"></label><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><label class="btn" style="cursor:pointer">Cambiar foto<input type="file" accept="image/*" data-pfoto style="display:none"></label>${perf.foto?'<button class="btn del" data-pquitar>Quitar foto</button>':''}</div></div>
     <div class="grp" style="margin-top:18px">Almacenamiento</div>
-    <div class="cardbox" style="display:grid;gap:10px"><div style="display:flex;justify-content:space-between;align-items:baseline"><b>Usado: ${txt}</b><span class="mut">de unos 5 MB · libre ${fmt(libre)}</span></div><div style="height:8px;background:#e6e5e1;border-radius:8px;overflow:hidden"><div style="height:100%;width:${Math.max(pctU,1)}%;background:linear-gradient(90deg,#ffffff,#8fb8ff)"></div></div><span class="mut" style="font-size:12px">Espacio que ocupa la app en este navegador. Los datos de la nube no se cuentan aquí.</span></div>`;
+    <div class="cardbox" style="display:grid;gap:10px"><div style="display:flex;justify-content:space-between;align-items:baseline"><b>Usado: ${txt}</b><span class="mut">de unos 5 MB</span></div><div style="height:8px;background:#e6e5e1;border-radius:8px;overflow:hidden"><div style="height:100%;width:${Math.max(pctU,1)}%;background:linear-gradient(90deg,#ffffff,#8fb8ff)"></div></div><span class="mut" style="font-size:12px">Espacio que ocupa la app en este navegador. Los datos de la nube no se cuentan aquí.</span></div>`;
 }
 
 function cardDate(o){const d=new Date(o.fl.slice(0,10)+'T12:00:00');const mon=d.toLocaleDateString('es-ES',{month:'short'}).replace('.','');return `<div class="item ${o.h?'done':''}" style="border-left:4px solid ${ccol(o)};align-items:center"><input type="checkbox" data-h="${o.id}" ${o.h?'checked':''}><div class="dbadge"><b>${d.getDate()}</b><span>${esc(mon)}</span></div><div style="flex:1;min-width:0"><a class="tt" data-open="${o.id}">${ticon(o)}${esc(String(o.t||'Sin título').replace(/^\s*(⏩|📤|⚪)\s*/,''))}</a><div class="meta">${o.a?`<span class="pill">${esc(o.a)}</span>`:''}${ppill(o)}</div></div></div>`}
