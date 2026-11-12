@@ -655,7 +655,9 @@ function resumenHtml(){
   const proximas=act().filter(o=>o.fl).sort(byFl).slice(0,4);
   const h=hoyD.getHours();
   const perf=perfilCfg();
-  const saludo=h<14?'Buenos días':h<21?'Buenas tardes':'Buenas noches';
+  const SALUDOS={d:['Buenos días','Buen día','Arriba ese ánimo'],t:['Buenas tardes','Buena tarde','Qué tal la tarde'],n:['Buenas noches','Buena noche','Cierra el día bien']};
+  const franja=(h>=6&&h<17)?'d':(h>=17&&h<20)?'t':'n';
+  const saludo=SALUDOS[franja][(hoyD.getDate()+h)%SALUDOS[franja].length];
   const frase=!semAll.length?'Esta semana no tienes nada programado. Buen momento para planificar algo nuevo.':pctS===0?'Todavía no has marcado nada esta semana. Empieza por la más fácil.':pctS<50?'Vas arrancando. Un par más y la semana cambia de color.':pctS<100?'Vas muy bien, te queda poco para cerrar la semana.':'¡Semana completa! Buen trabajo.';
   const stat=(n,l,c)=>`<div class="stat"><b style="color:${c}">${n}</b><span>${l}</span></div>`;
   const semPend=act().filter(inWeek).length;
