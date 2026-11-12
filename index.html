@@ -422,7 +422,8 @@ function frCtl(o,id){const [a,b]=frParts(o.fr);return `<div data-frw="${id}" sty
 function card(o,hora){
   const fd=(o.fl&&!hora)?new Date(o.fl.slice(0,10)+'T12:00:00'):null;
   const badge=fd?`<div class="dbadge"><b>${fd.getDate()}</b><span>${esc(fd.toLocaleDateString('es-ES',{month:'short'}).replace('.',''))}</span></div>`:'';
-  return `<div class="item ${o.h?'done':''}" style="border-left:4px solid ${ccol(o)};align-items:center">
+  const strip=(o.g||o.a)?`border-left:4px solid ${ccol(o)};`:'';
+  return `<div class="item ${o.h?'done':''}" style="${strip}align-items:center">
     <input type="checkbox" data-h="${o.id}" ${o.h?'checked':''}>${badge}
     <div style="flex:1;min-width:0"><a class="tt" data-open="${o.id}">${ticon(o)}${esc(o.t||'Sin título')}</a>
     <div class="meta">${o.a?`<span class="pill">${esc(o.a)}</span>`:''}${ppill(o)}${o.pr?`<span class="pill" style="background:${PRC[o.pr]||'#efefed'}22">${esc(o.pr)}</span>`:''}${hora&&o.fr?`<span class="pill">🕒 ${esc(o.fr)}</span>`:''}</div></div></div>`;
