@@ -382,6 +382,10 @@ body.dark .wdlg .sumrow{background:#2a2a2a}
 .wskip{height:44px;padding:0 18px;font-size:15px}
 .wArr.wtxtb{font-size:15px}
 
+/* asistente: la barra avanza con una animación suave en vez de saltar */
+.wbar span{width:var(--p1);animation:wbarIn .45s cubic-bezier(.22,.8,.3,1) both}
+@keyframes wbarIn{from{width:var(--p0)}to{width:var(--p1)}}
+
 /* asistente: todo el contenido centrado horizontalmente dentro de la caja */
 .wdlg{text-align:center}
 .wdlg .wbar{margin-left:auto;margin-right:auto}
@@ -995,7 +999,7 @@ function renderWiz(){
   document.body.insertAdjacentHTML('beforeend',`<div class="ov" id="wiz"><div class="wdlg">
     <button class="wx" data-wcancel>✕</button>
     <div class="mut">Paso ${wiz.i+1} de ${ks.length}</div>
-    <div class="wbar"><span style="width:${Math.round((wiz.i+1)/ks.length*100)}%"></span></div>
+    <div class="wbar"><span style="--p0:${Math.round(wiz.i/ks.length*100)}%;--p1:${Math.round((wiz.i+1)/ks.length*100)}%"></span></div>
     <h2 class="wq">${WQ[k]||p.l}</h2>
     ${ctl}
     <div class="wbtns">
