@@ -309,7 +309,7 @@ function saveSoon(){clearTimeout(tm);tm=setTimeout(persist,400)}
 const act=()=>S.filter(o=>!o.h);
 const gc=g=>GC[g]||'#9b9a97';
 const ACOL={'Inglés':'#e53935','Proyecto I':'#1e63d6','Infografía':'#9334e6','Diseño crítico':'#3d9e2e','Cultura visual':'#f2b705'};
-const GCAL=[{d:'2026-11-14',t:'Bermu con Jorge y Gon',h:'12:00–13:00'},{d:'2026-11-20',t:'Curso novios',h:'21:35–22:35'},{d:'2026-12-09',t:'Cumple Yerko',h:'Todo el día'}];
+const GCAL=[{d:'2026-11-14',t:'Bermu con Jorge y Gon',h:'12:00–13:00'},{d:'2026-11-20',t:'Curso novios',h:'21:35–22:35'},{d:'2026-12-09',t:'Cumple Yerko',h:'Todo el día'},{d:'2027-01-16',t:'Examen Inglés',h:'11:30–13:30'}];
 const PCOL={Alta:'#d44c47',Media:'#d9a20f',Baja:'#8a8880'};
 const ppill=o=>o.p?`<span title="${esc(o.p)}" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${PCOL[o.p]};margin-left:4px;vertical-align:middle;align-self:center"></span>`:'';
 const ccol=o=>o.g==='Universidad'&&ACOL[o.a]?ACOL[o.a]:gc(o.g);
