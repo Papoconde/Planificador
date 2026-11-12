@@ -652,9 +652,9 @@ function completadoHtml(){
     const hoyS=ymd(hoyD), yer=ymd(new Date(hoyD.getFullYear(),hoyD.getMonth(),hoyD.getDate()-1));
     const dow=(hoyD.getDay()+6)%7, semS=ymd(new Date(hoyD.getFullYear(),hoyD.getMonth(),hoyD.getDate()-dow)), mesS=ymd(new Date(hoyD.getFullYear(),hoyD.getMonth(),1));
     const bucket=d=>d===hoyS?'Hoy':d===yer?'Ayer':d>=semS?'Esta semana':d>=mesS?'Este mes':'Anteriores';
-    const sorted=done.filter(o=>compG==='__all'||o.g===compG).sort(byRecC);
+    const sorted=done.filter(o=>compG==='__all'||o.g===compG).sort((a,b)=>(b.hAt||'').localeCompare(a.hAt||''));
     let last='';
-    body=sorted.map(o=>{const b=bucket((o.hAt||o.pu||o.di||o.fl||'').slice(0,10));const h=b!==last?`<div class="grp">${b}</div>`:'';last=b;return h+card(o)}).join('')||`<p class="mut">Todavía no hay tareas completadas${compG!=='__all'?` de ${esc(compG)}`:''}.</p>`;
+    body=sorted.map(o=>{const b=bucket((o.hAt||'').slice(0,10));const h=b!==last?`<div class="grp">${b}</div>`:'';last=b;return h+card(o)}).join('')||`<p class="mut">Todavía no hay tareas completadas${compG!=='__all'?` de ${esc(compG)}`:''}.</p>`;
   } else if(compG==='__all'){
     body=[...Object.keys(GC),''].map(g=>{const rows=done.filter(o=>(o.g||'')===g).sort(byRecC);if(!rows.length)return '';return `<div class="grp"><span class="dot" style="background:${gc(g)}"></span>${g||'Sin grupo'} <span class="mut">${rows.length}</span></div>`+rows.map(o=>card(o)).join('')}).join('');
   } else {
