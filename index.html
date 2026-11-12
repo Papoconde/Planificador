@@ -438,6 +438,9 @@ body.dark .wdlg .sumrow{background:#2a2a2a}
 .fmtb svg{vertical-align:-5px;margin-right:6px}
 /* móvil: el tablero de contenido se ve en vertical, con las ideas arriba */
 @media(max-width:700px){.kanban{grid-template-columns:1fr!important;overflow-x:visible!important;gap:14px}.col{min-height:0}}
+/* arrastrar: la columna de destino se ilumina */
+.col{transition:background .15s,box-shadow .15s}
+.col.hot{background:rgba(143,184,255,.14)!important;box-shadow:0 0 0 2px rgba(143,184,255,.85),0 0 22px rgba(143,184,255,.35)}
 </style>
 </head>
 <body>
@@ -481,7 +484,7 @@ const mon=(()=>{const d=new Date(hoyD);d.setDate(d.getDate()-((d.getDay()+6)%7))
 const sun=(()=>{const d=new Date(mon+'T12:00:00');d.setDate(d.getDate()+6);return ymd(d)})();
 const hace30=ymd(new Date(Date.now()-30*864e5));
 
-let S=[], section='resumen', page=null, redesView='tablero', showIdeas=true, askId=null, dark=false, selDay=ymd(hoyD), sync='Solo en este dispositivo', ref=null, tm=null;
+let S=[], section='resumen', page=null, redesView='tablero', showIdeas=true, askId=null, askPu=null, dark=false, selDay=ymd(hoyD), sync='Solo en este dispositivo', ref=null, tm=null;
 
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function fmtD(v){if(!v)return '';const dt=new Date(v.slice(0,10)+'T12:00:00');let s=dt.toLocaleDateString('es-ES',{day:'numeric',month:'short'});return s}
@@ -608,7 +611,7 @@ function redesHtml(){
       (L.pr.filter(p=>showIdeas||p!=='Idea').map(p=>{const rs=redes.filter(o=>o.pr===p);if(!rs.length)return '';return `<div class="grp"><span class="dot" style="background:${PRC[p]}"></span>${PRI[p]} ${p} <span class="mut">${rs.length}</span></div>`+rs.map(o=>`<div class="trow" style="border-left:4px solid ${PRC[p]}"><a class="tt" data-open="${o.id}">${esc(o.t||'Sin título')}</a><div>${selInl(o,'pr',L.pr)}</div><div>${o.f?`<span class="pill">${esc(o.f)}</span>`:'<span class="mut">—</span>'}</div><div class="mut">${esc(fmtD(o.pu))||'—'}</div></div>`).join('')}).join('')||'<p class="mut">Sin vídeos.</p>');
   } else {
     body=`<div class="kanban">${L.pr.map(col=>{
-      const items=redes.filter(o=>o.pr===col && (col!=='Subido'||(o.pu&&o.pu.slice(0,10)>=hace30)));
+      const items=redes.filter(o=>o.pr===col && (col!=='Subido'||(o.pu&&o.pu.slice(0,7)===ymd(hoyD).slice(0,7))));
       if(col==='Idea'&&!showIdeas)return '';
       const oculta=false;
       const btn='';
@@ -836,6 +839,7 @@ function render(){
   document.body.classList.toggle('dark',dark);
   document.getElementById('themeBtn').innerHTML=noEmo(`<span class="ico">${dark?'☀️':'🌙'}</span><span class="lbl"> ${dark?'Claro':'Oscuro'}</span>`);
   document.getElementById('main').innerHTML=noEmo(o?pageHtml2(o):secHtml());
+  if(askPu){const a=S.find(x=>x.id===askPu);if(a)document.getElementById('main').insertAdjacentHTML('beforeend',`<div class="ov"><div class="dlg2"><h3>¿Cuándo se subió?</h3><p class="mut">“${esc(a.t||'Sin título')}” pasa a Subido</p><input type="date" id="puDate" class="wtxt" value="${ymd(hoyD)}" style="margin:12px 0"><div class="wbtns" style="justify-content:center"><button class="btn pri" data-pu-save>Guardar</button><button class="btn" data-pu-cancel>Ahora no</button></div></div></div>`)}
   if(askId){const a=S.find(x=>x.id===askId);if(a)document.getElementById('main').insertAdjacentHTML('beforeend',`<div class="ov"><div class="dlg2"><h3>¿Es carrusel o reel?</h3><p class="mut">“${esc(a.t||'Sin título')}” pasa a Por grabar</p><div class="fmtbtns"><button class="fmtb" data-fmt="Reel">${ico('clap',20)} Reel</button><button class="fmtb" data-fmt="Carrusel">${ico('image',20)} Carrusel</button></div><button class="btn" data-fmtcancel style="margin-top:12px">Ahora no</button></div></div>`)}
   if(o){const el=document.getElementById('ptitle');if(el&&!el.value)el.focus()}
   moveSeg(compG);
@@ -848,7 +852,7 @@ function novo(extra){
 }
 
 document.addEventListener('click',e=>{
-  const t=e.target.closest('[data-open],[data-sec],[data-rv],[data-toggle-ideas],[data-theme],[data-fmt],[data-fmtcancel],[data-new],[data-newg],[data-newday],[data-selday],[data-back],[data-del],[data-month]');
+  const t=e.target.closest('[data-open],[data-sec],[data-rv],[data-toggle-ideas],[data-theme],[data-fmt],[data-fmtcancel],[data-pu-save],[data-pu-cancel],[data-new],[data-newg],[data-newday],[data-selday],[data-back],[data-del],[data-month]');
   if(!t)return;
   const d=t.dataset;
   if('open' in d){page=d.open;return render()}
@@ -858,6 +862,8 @@ document.addEventListener('click',e=>{
   if('theme' in d){dark=!dark;try{localStorage.setItem('planner-theme',dark?'dark':'light')}catch(e){}return render()}
   if('fmt' in d){const o=S.find(x=>x.id===askId);if(o)o.f=d.fmt;askId=null;persist();return render()}
   if('fmtcancel' in d){askId=null;return render()}
+  if('puSave' in d){const o=S.find(x=>x.id===askPu);const v=(document.getElementById('puDate')||{}).value;if(o&&v)o.pu=v;askPu=null;persist();return render()}
+  if('puCancel' in d){askPu=null;return render()}
   if('back' in d){page=null;return render()}
   if('del' in d){const di=S.find(x=>x.id===d.del);if(!confirm(`¿Borrar "${di?di.t:'esta tarea'}"? No se puede deshacer.`))return;S=S.filter(x=>x.id!==d.del);page=null;persist();return render()}
   if('month' in d){calM+=+d.month;if(calM<0){calM=11;calY--}if(calM>11){calM=0;calY++}return render()}
@@ -880,13 +886,13 @@ document.addEventListener('change',e=>{
     const k=t.dataset.pf;
     const _prev=o.pr;
     o[k]=k==='h'?t.checked:t.value;
-    if(k==='pr'&&o.pr==='Subido')o.h=true;
+    if(k==='pr'&&o.pr==='Subido'){o.h=true;if(_prev!=='Subido')askPu=o.id}
     if(k==='pr'&&o.pr==='Por grabar'&&_prev==='Idea')askId=o.id;
     persist();
     if(['g','f','h','pr'].includes(k))render();
     return;
   }
-  if('field' in t.dataset){const o=S.find(x=>x.id===t.dataset.id);if(o){const _prev=o.pr;o[t.dataset.field]=t.value;if(t.dataset.field==='pr'&&t.value==='Subido')o.h=true;if(t.dataset.field==='pr'&&t.value==='Por grabar'&&_prev==='Idea')askId=o.id;persist();render()}return}
+  if('field' in t.dataset){const o=S.find(x=>x.id===t.dataset.id);if(o){const _prev=o.pr;o[t.dataset.field]=t.value;if(t.dataset.field==='pr'&&t.value==='Subido'){o.h=true;if(_prev!=='Subido')askPu=o.id}if(t.dataset.field==='pr'&&t.value==='Por grabar'&&_prev==='Idea')askId=o.id;persist();render()}return}
   if('h' in t.dataset){const o=S.find(x=>x.id===t.dataset.h);if(o){o.h=t.checked;persist();render()}}
 });
 
@@ -958,7 +964,7 @@ document.addEventListener('click',e=>{
   if(a==='open')page=o.id;
   else if(a==='done')o.h=!o.h;
   else if(a==='del'){if(!confirm(`¿Borrar "${o.t}"? No se puede deshacer.`))return;S=S.filter(x=>x.id!==id);if(page===id)page=null}
-  else if(a==='pr'){const _prev=o.pr;o.pr=b.dataset.cxv;if(o.pr==='Subido')o.h=true;if(o.pr==='Por grabar'&&_prev==='Idea')askId=o.id}
+  else if(a==='pr'){const _prev=o.pr;o.pr=b.dataset.cxv;if(o.pr==='Subido'){o.h=true;if(_prev!=='Subido')askPu=o.id};if(o.pr==='Por grabar'&&_prev==='Idea')askId=o.id}
   persist();render();
 });
 let voiceRec=null,voiceTxt='';
@@ -1053,15 +1059,16 @@ document.addEventListener('click',e=>{
 document.addEventListener('input',e=>{const t=e.target;if(wiz&&'wkey' in t.dataset)wiz.o[t.dataset.wkey]=t.value});
 document.addEventListener('keydown',e=>{if(wiz&&e.key==='Enter'&&e.target.tagName==='INPUT'&&'wkey' in e.target.dataset){e.preventDefault();const n=document.querySelector('#wiz [data-wnext]');if(n)n.click()}});
 let tdrag=null;
-function clearDropHL(){document.querySelectorAll('[data-drop]').forEach(c=>c.style.outline='')}
+function clearDropHL(){document.querySelectorAll('[data-drop]').forEach(c=>c.classList.remove('hot'))}
 document.addEventListener('pointerdown',e=>{if(e.pointerType!=='touch')return;const el=e.target.closest('[data-drag]');if(el){tdrag={id:el.dataset.drag,x:e.clientX,y:e.clientY,on:false,el};tdrag.t=setTimeout(()=>el.classList.add('lift'),200)}});
-document.addEventListener('pointermove',e=>{if(!tdrag||e.pointerType!=='touch')return;const dx=e.clientX-tdrag.x,dy=e.clientY-tdrag.y;if(!tdrag.on){if(Math.abs(dx)>12&&Math.abs(dx)>Math.abs(dy)*1.5){tdrag.on=true;tdrag.el.style.opacity='.5'}else return}const col=document.elementFromPoint(e.clientX,e.clientY)?.closest('[data-drop]');document.querySelectorAll('[data-drop]').forEach(c=>c.style.outline=c===col?'2px solid #2383e2':'')});
-document.addEventListener('pointerup',e=>{if(!tdrag)return;const d=tdrag;tdrag=null;clearDropHL();clearTimeout(d.t);d.el.classList.remove('lift');if(!d.on)return;const col=document.elementFromPoint(e.clientX,e.clientY)?.closest('[data-drop]');const o=S.find(x=>x.id===d.id);if(col&&o){const _prev=o.pr;o.pr=col.dataset.drop;if(o.pr==='Subido')o.h=true;if(o.pr==='Por grabar'&&_prev==='Idea')askId=o.id;persist()}render()});
+document.addEventListener('pointermove',e=>{if(!tdrag||e.pointerType!=='touch')return;const dx=e.clientX-tdrag.x,dy=e.clientY-tdrag.y;if(!tdrag.on){if(Math.abs(dx)>12&&Math.abs(dx)>Math.abs(dy)*1.5){tdrag.on=true;tdrag.el.style.opacity='.5'}else return}const col=document.elementFromPoint(e.clientX,e.clientY)?.closest('[data-drop]');document.querySelectorAll('[data-drop]').forEach(c=>c.classList.toggle('hot',c===col))});
+document.addEventListener('pointerup',e=>{if(!tdrag)return;const d=tdrag;tdrag=null;clearDropHL();clearTimeout(d.t);d.el.classList.remove('lift');if(!d.on)return;const col=document.elementFromPoint(e.clientX,e.clientY)?.closest('[data-drop]');const o=S.find(x=>x.id===d.id);if(col&&o){const _prev=o.pr;o.pr=col.dataset.drop;if(o.pr==='Subido'){o.h=true;if(_prev!=='Subido')askPu=o.id}if(o.pr==='Por grabar'&&_prev==='Idea')askId=o.id;persist()}render()});
 document.addEventListener('pointercancel',()=>{if(tdrag){clearTimeout(tdrag.t);tdrag.el.classList.remove('lift')}tdrag=null;clearDropHL()});
 let dragId=null;
 document.addEventListener('dragstart',e=>{const el=e.target.closest('[data-drag]');if(!el)return;dragId=el.dataset.drag;e.dataTransfer.effectAllowed='move';try{e.dataTransfer.setData('text/plain',dragId)}catch(err){}});
-document.addEventListener('dragover',e=>{if(e.target.closest('[data-drop]'))e.preventDefault()});
-document.addEventListener('drop',e=>{const col=e.target.closest('[data-drop]');if(!col||!dragId)return;e.preventDefault();const o=S.find(x=>x.id===dragId);dragId=null;if(o){const _prev=o.pr;o.pr=col.dataset.drop;if(o.pr==='Subido')o.h=true;if(o.pr==='Por grabar'&&_prev==='Idea')askId=o.id;persist();render()}});
+document.addEventListener('dragover',e=>{if(e.target.closest('[data-drop]'))e.preventDefault();const c=e.target.closest('[data-drop]');document.querySelectorAll('[data-drop]').forEach(x=>x.classList.toggle('hot',x===c))});
+document.addEventListener('dragend',clearDropHL);
+document.addEventListener('drop',e=>{const col=e.target.closest('[data-drop]');if(!col||!dragId)return;e.preventDefault();const o=S.find(x=>x.id===dragId);dragId=null;if(o){const _prev=o.pr;o.pr=col.dataset.drop;if(o.pr==='Subido'){o.h=true;if(_prev!=='Subido')askPu=o.id}if(o.pr==='Por grabar'&&_prev==='Idea')askId=o.id;persist();render()}});
 document.addEventListener('dragend',()=>{dragId=null});
 
 const SB_URL='https://yiwohanhksrlyfigztuc.supabase.co';
