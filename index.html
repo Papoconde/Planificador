@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Planificador</title>
@@ -15,7 +16,7 @@
 *{box-sizing:border-box;touch-action:manipulation;-webkit-text-size-adjust:100%}
 *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 textarea,input,[contenteditable]{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
-body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#fbfbfa;color:#37352f;font-size:14px;line-height:1.5;letter-spacing:-.005em;-webkit-font-smoothing:antialiased}
+body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#fbfbfa;color:#37352f;font-size:14px;line-height:1.5;letter-spacing:-.005em;-webkit-font-smoothing:antialiased}
 .app{display:flex;min-height:100vh}
 .side{width:230px;background:#f3f2ef;border-right:1px solid #e6e5e1;padding:18px 12px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow:auto}
 .side h2{font-size:17px;margin:4px 8px 2px}
@@ -262,6 +263,7 @@ body.dark .wx{color:#8a8880}
 @media(max-width:700px){.wdlg{padding:18px;max-height:90vh;overflow:auto}.wbtns{flex-wrap:wrap}.wbtns .pri{flex:1 1 100%;margin-left:0;padding:12px}.wq{font-size:20px}}
 
 @media(max-width:700px){.side{background:#e5322d!important;border-top:0!important}.side .nav{color:#fff}.side .nav.on{background:rgba(255,255,255,.22)!important;box-shadow:none}.navind{background:rgba(255,255,255,.22)!important}.fab{background:#fff;color:#e5322d;box-shadow:0 8px 22px rgba(0,0,0,.25)}.nav .ico{display:flex;align-items:center;justify-content:center}}
+h1,h2,h3,.wq,.stat b,.picon{font-family:"Space Grotesk",Inter,sans-serif;letter-spacing:-.01em}
 </style>
 </head>
 <body>
