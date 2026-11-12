@@ -232,6 +232,12 @@ body.dark .wkday{background:#202020}
 body.dark .pdet{background:#232323;border-color:#333}
 body.dark .pbody{background:transparent;color:#e8e6e1}
 .pdesc{color:#6b6a66;font-size:15px;margin:0 0 14px;line-height:1.5;white-space:pre-wrap}
+.pdesc.box{border:1px solid #e9e9e7;border-radius:10px;padding:12px 14px}
+.ptr{margin-top:10px;border-top:1px solid #efefed;padding-top:8px}
+.ptr summary{cursor:pointer;font-size:13px;font-weight:600;color:#9b9a97}
+.ptr div{margin-top:6px;font-size:14px;color:#8a8880}
+body.dark .pdesc.box{border-color:#333;background:#232323}
+body.dark .ptr{border-color:#333}
 .gev{font-size:12px;color:#8a8880;border:1px dashed #d8d6d1;border-radius:8px;padding:4px 8px;margin:0 0 6px}
 .gev span{opacity:.8}
 body.dark .gev{border-color:#444}
@@ -270,7 +276,7 @@ body.dark .wx{color:#8a8880}
   
 </div>
 <script>
-const K=['t','h','g','sg','a','p','ty','pr','e','f','tv','hs','du','fr','d','n','fl','di','pu','cu'];
+const K=['t','h','g','sg','a','p','ty','pr','e','f','tv','hs','du','fr','d','n','fl','di','pu','cu','tr'];
 const L={g:['Universidad','Redes','Personal','WithDesign'],sg:['🎬 Vídeos','📌 Otros','🖌️ Diseño'],a:['Inglés','Proyecto I','Infografía','Diseño crítico','Cultura visual'],p:['Alta','Media','Baja'],ty:['Obligatorio','⏩ Adelanto','Opcional','Entrega'],pr:['Idea','Por grabar','Grabado','Editado','Subido'],e:['Sin estado','Sin empezar','En curso','Listo'],f:['Reel','Carrusel'],tv:['Logo / curiosidad','Rebrand','Tipografía','Opinión','Reto','Personal']};
 const PROPS=[
  {k:'t',l:'Tarea',type:'text'},{k:'h',l:'Hecho',type:'check'},
@@ -299,7 +305,7 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 function fmtD(v){if(!v)return '';const dt=new Date(v.slice(0,10)+'T12:00:00');let s=dt.toLocaleDateString('es-ES',{day:'numeric',month:'short'});return s}
 function opts(list,cur){return list.map(o=>`<option ${o===cur?'selected':''}>${esc(o)}</option>`).join('')}
 function selInl(o,field,list){return `<select data-field="${field}" data-id="${o.id}"><option value="">—</option>${opts(list,o[field]||'')}</select>`}
-function fromArr(a,i){const o={id:'r'+i};K.forEach((k,j)=>{o[k]=a[j]==null?'':a[j]});o.h=!!o.h;return o}
+function fromArr(a,i){const o={id:'r'+i};K.forEach((k,j)=>{o[k]=a[j]==null?'':a[j]});o.h=!!o.h;if(!o.tr&&o.cu&&String(o.t).startsWith('🎙️ Pendiente de resumir')){o.tr=o.cu;o.cu=''}return o}
 function toArr(o){return K.map(k=>k==='h'?(o.h?1:0):(o[k]||''))}
 function persist(){
   const data={rows:S.map(toArr)};
@@ -575,7 +581,7 @@ function pageHtml2(o){
     <div class="picon" style="color:${g}">${ico}</div>
     <input id="ptitle" class="ptitle" data-pt="${o.id}" value="${esc(o.t)}" placeholder="Sin título">
     <div class="pchips"><span class="pill" style="background:${g}22;color:${g}">${esc(o.g||'Sin grupo')}</span>${chips}${o.h?'<span class="pill">✅ Hecha</span>':''}</div>
-    ${o.d?`<div class="pdesc">${esc(o.d)}</div>`:''}
+    ${o.tr?`<div class="pdesc box">${o.d?esc(o.d):'<span class="mut">Pendiente de resumir…</span>'}<details class="ptr"><summary>Transcripción completa</summary><div>${esc(o.tr)}</div></details></div>`:o.d?`<div class="pdesc">${esc(o.d)}</div>`:''}
     ${pEdit?`<div class="pgrid">${props}</div>`:''}
     <textarea class="pbody" data-pf="cu" data-pid="${o.id}" placeholder="Escribe aquí...">${esc(o.cu)}</textarea>
   </div>`;
@@ -868,7 +874,7 @@ async function afterLogin(){
 function saveIdea(text){
   const clean=text.replace(/\s+/g,' ').trim();
   const hora=new Date().toLocaleString('es-ES',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
-  S.push({id:'n'+Date.now(),h:false,g:'Redes',pr:'Idea',t:'🎙️ Pendiente de resumir · '+hora,d:'',cu:clean});
+  S.push({id:'n'+Date.now(),h:false,g:'Redes',pr:'Idea',t:'🎙️ Pendiente de resumir · '+hora,d:'',cu:'',tr:clean});
   persist();section='redes';page=null;render();
 }
 async function startVoice(){
