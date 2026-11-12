@@ -373,6 +373,13 @@ body.dark .wdlg .sumrow{background:#2a2a2a}
 .wbar{border-radius:4px}
 .wbar span{border-radius:4px}
 .wq{font-size:20px}
+
+/* asistente: flechas, Omitir e Idea centrados en vertical y con el mismo tamaño */
+.wbtns .wnav{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.wArr,.wskip,.wopt{display:inline-flex;align-items:center;justify-content:center;line-height:1}
+.wArr{font-size:20px}
+.wskip{height:44px;padding:0 18px;font-size:15px}
+.wArr.wtxtb{font-size:15px}
 </style>
 </head>
 <body>
@@ -906,7 +913,7 @@ function renderWiz(){
   if(wiz.i>=ks.length)return renderSummary(ks);
   const k=ks[wiz.i], p=P[k], o=wiz.o, last=wiz.i>=ks.length-1;
   let ctl;
-  if(p.type==='sel')ctl=`<div class="wopts">${L[k].map(v=>`<button class="wopt ${o[k]===v?'on':''}" data-wopt="${k}" data-wv="${esc(v)}">${esc(v)}</button>`).join('')}${k==='g'?'<button class="wopt" data-voice>💡 Idea por voz</button>':''}</div>`;
+  if(p.type==='sel')ctl=`<div class="wopts">${L[k].map(v=>`<button class="wopt ${o[k]===v?'on':''}" data-wopt="${k}" data-wv="${esc(v)}">${esc(v)}</button>`).join('')}${k==='g'?'<button class="wopt" data-voice>Idea</button>':''}</div>`;
   else if(k==='fr')ctl=frCtl(o,'w');
   else if(p.type==='area'||p.type==='pagina')ctl=`<textarea class="wtxt" rows="4" data-wkey="${k}">${esc(o[k]||'')}</textarea>`;
   else if(p.type==='date')ctl=`<input type="date" class="wtxt" data-wkey="${k}" value="${esc((o[k]||'').slice(0,10))}">`;
