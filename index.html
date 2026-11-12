@@ -443,7 +443,7 @@ function semanaHtml(){
     const d=new Date(mon+'T12:00:00');d.setDate(d.getDate()+i);
     const key=ymd(d);
     const items=rows.filter(o=>((o.di||o.fl||'').slice(0,10))===key).sort((a,b)=>(a.fr||'').localeCompare(b.fr||''));
-    return `<div class="day"><h4>${nombre} ${d.getDate()}</h4>${items.map(o=>card(o)).join('')||'<span class="mut">—</span>'}</div>`;
+    return `<div class="day"><h4>${nombre} ${d.getDate()}</h4>${items.map(o=>card(o,true)).join('')||'<span class="mut">—</span>'}</div>`;
   }).join('');
   return `<h1>🔔 Esta semana</h1><div class="sub">Del ${fmtD(mon)} al ${fmtD(sun)}</div><div class="grid7">${cols}</div>`;
 }
