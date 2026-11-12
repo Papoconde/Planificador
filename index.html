@@ -838,7 +838,6 @@ function renderWiz(){
   else if(p.type==='date')ctl=`<input type="date" class="wtxt" data-wkey="${k}" value="${esc((o[k]||'').slice(0,10))}">`;
   else ctl=`<input type="text" class="wtxt" data-wkey="${k}" value="${esc(o[k]||'')}" placeholder="Escribe aquí...">`;
   document.body.insertAdjacentHTML('beforeend',`<div class="ov" id="wiz"><div class="wdlg">
-  {const _e=document.getElementById('wiz');if(_e)_e.innerHTML=noEmo(_e.innerHTML);}
     <button class="wx" data-wcancel>✕</button>
     <div class="mut">Paso ${wiz.i+1} de ${ks.length}</div>
     <div class="wbar"><span style="width:${Math.round((wiz.i+1)/ks.length*100)}%"></span></div>
@@ -851,6 +850,7 @@ function renderWiz(){
         <button class="wArr wArrP${last?' wtxtb':''}" data-wnext>${last?'Guardar ✓':'→'}</button>
       </div>
     </div></div></div>`);
+  {const _e=document.getElementById('wiz');if(_e)_e.innerHTML=noEmo(_e.innerHTML);}
   const inp=document.querySelector('#wiz [data-wkey]');if(inp&&p.type!=='sel')inp.focus();
 }
 document.addEventListener('click',e=>{
