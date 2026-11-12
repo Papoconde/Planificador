@@ -274,7 +274,7 @@ h1,h2,h3,.wq,.stat b,.picon{font-family:"Space Grotesk",Inter,sans-serif;letter-
 h1,.hero-h,.stats .stat b,.hero-n{background:linear-gradient(90deg,#ffffff,#8fb8ff);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
 .tt div{background:linear-gradient(90deg,#ffffff,#8fb8ff)!important}
 .tb{background:linear-gradient(135deg,#ffffff,#8fb8ff)!important;color:#191919!important}
-.trow,.item{border:0!important;box-shadow:none!important}
+.trow,.item{box-shadow:none!important;border-top:0!important;border-right:0!important;border-bottom:0!important}
 .prop,.thead{border-bottom:0!important}
 h1 svg{display:none!important}
 
@@ -337,6 +337,8 @@ body.dark .btn.on,body.dark .wopt.on,body.dark .cxp.on{background:#2a2a2a!import
 .tt{background:none!important;height:auto!important;border-radius:0!important;overflow:visible!important;flex:initial!important}
 .thermo .tt{height:16px!important;border-radius:16px!important;overflow:hidden!important;flex:1!important;background:rgba(255,255,255,.3)!important}
 .thermo .tt div{background:linear-gradient(90deg,#ffffff,#8fb8ff)!important}
+/* la franja de color de la asignatura es border-left en línea */
+.item,.trow{border-top:0!important;border-right:0!important;border-bottom:0!important}
 </style>
 </head>
 <body>
@@ -418,10 +420,12 @@ function visibleKeys(d){
 function frParts(v){const [a,b]=String(v||'').split('-');return [a||'',b||'']}
 function frCtl(o,id){const [a,b]=frParts(o.fr);return `<div data-frw="${id}" style="display:flex;gap:8px;align-items:center"><input type="time" data-frp="0" value="${a}" style="width:auto"><span class="mut">→</span><input type="time" data-frp="1" value="${b}" style="width:auto"></div>`}
 function card(o,hora){
-  return `<div class="item ${o.h?'done':''}" style="border-left:4px solid ${ccol(o)}">
-    <input type="checkbox" data-h="${o.id}" ${o.h?'checked':''} style="margin-top:3px">
+  const fd=(o.fl&&!hora)?new Date(o.fl.slice(0,10)+'T12:00:00'):null;
+  const badge=fd?`<div class="dbadge"><b>${fd.getDate()}</b><span>${esc(fd.toLocaleDateString('es-ES',{month:'short'}).replace('.',''))}</span></div>`:'';
+  return `<div class="item ${o.h?'done':''}" style="border-left:4px solid ${ccol(o)};align-items:center">
+    <input type="checkbox" data-h="${o.id}" ${o.h?'checked':''}>${badge}
     <div style="flex:1;min-width:0"><a class="tt" data-open="${o.id}">${ticon(o)}${esc(o.t||'Sin título')}</a>
-    <div class="meta">${o.a?`<span class="pill">${esc(o.a)}</span>`:''}${ppill(o)}${o.pr?`<span class="pill" style="background:${PRC[o.pr]||'#efefed'}22">${esc(o.pr)}</span>`:''}${o.fl&&!hora?`<span class="pill">📅 ${esc(fmtD(o.fl))}</span>`:''}${hora&&o.fr?`<span class="pill">🕒 ${esc(o.fr)}</span>`:''}</div></div></div>`;
+    <div class="meta">${o.a?`<span class="pill">${esc(o.a)}</span>`:''}${ppill(o)}${o.pr?`<span class="pill" style="background:${PRC[o.pr]||'#efefed'}22">${esc(o.pr)}</span>`:''}${hora&&o.fr?`<span class="pill">🕒 ${esc(o.fr)}</span>`:''}</div></div></div>`;
 }
 function redCard(o){
   return `<div class="item ${o.h?'done':''}" style="border-left:4px solid ${PRC[o.pr]||'#c8c7c3'};display:block">
