@@ -443,8 +443,10 @@ body.dark .wdlg .sumrow{background:#2a2a2a}
 .col.hot{background:rgba(143,184,255,.14)!important;box-shadow:0 0 0 2px rgba(143,184,255,.85),0 0 22px rgba(143,184,255,.35)}
 /* deslizar: la tarea se pone verde con la etiqueta Completado */
 .item{touch-action:pan-y;position:relative}
-.item[data-swipe]::before{content:'Completado ✓';position:absolute;right:14px;top:50%;transform:translateY(-50%);color:#fff;font-weight:600;font-size:14px;opacity:var(--swp,0);pointer-events:none}
-.item[data-swipe] .tt,.item[data-swipe] .mut{color:#fff!important}
+.swwrap{position:relative;border-radius:12px;overflow:hidden}
+.swbg{position:absolute;inset:0;background:#0f7b6c;color:#fff;display:flex;align-items:center;gap:8px;padding-left:18px;font-weight:600;font-size:14px;border-radius:12px;pointer-events:none}
+.swbg .swlbl{opacity:var(--swp,0)}
+.swwrap>.item{position:relative;z-index:1}
 .swtoast{position:fixed;left:12px;right:12px;bottom:calc(96px + env(safe-area-inset-bottom));z-index:30;background:#262626;color:#fff;border-radius:14px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 8px 24px rgba(0,0,0,.4);font-size:14px}
 .swtoast button{background:none;border:0;color:#8fb8ff;font:inherit;font-weight:600;cursor:pointer}
 </style>
@@ -1188,7 +1190,27 @@ document.addEventListener('click',e=>{if(e.target.closest('[data-vcancel]')&&win
 
 /* deslizar a la derecha para completar una tarea (To Do y calendario) */
 let swDrag=null, swToast=null;
-function swReset(el){if(!el)return;el.style.transform='';el.style.background='';el.removeAttribute('data-swipe');el.style.transition='transform .2s ease, background .2s ease'}
+function swWrap(el){
+  if(el._swWrap)return;
+  const w=document.createElement('div');w.className='swwrap';
+  w.style.marginBottom=getComputedStyle(el).marginBottom;
+  const bg=document.createElement('div');bg.className='swbg';
+  bg.innerHTML='<span>✓</span><span class="swlbl">Completado</span>';
+  el.style.margin='0';
+  el.parentNode.insertBefore(w,el);w.appendChild(bg);w.appendChild(el);
+  el._swWrap=w;
+}
+function swUnwrap(el){
+  const w=el._swWrap;if(!w)return;
+  el._swWrap=null;el.style.margin='';
+  if(w.parentNode)w.replaceWith(el);
+}
+function swReset(el){
+  if(!el)return;
+  el.style.transform='';el.style.background='';el.removeAttribute('data-swipe');
+  el.style.transition='transform .25s ease';
+  setTimeout(()=>{if(!swDrag||swDrag.el!==el)swUnwrap(el)},260);
+}
 document.addEventListener('pointerdown',e=>{
   if(e.pointerType!=='touch')return;
   const el=e.target.closest('.item');
@@ -1199,12 +1221,11 @@ document.addEventListener('pointerdown',e=>{
 document.addEventListener('pointermove',e=>{
   if(!swDrag||e.pointerType!=='touch')return;
   const dx=e.clientX-swDrag.x, dy=e.clientY-swDrag.y;
-  if(!swDrag.on){if(dx>12&&dx>Math.abs(dy)*1.5){swDrag.on=true;swDrag.el.style.transition='none';swDrag.el.setAttribute('data-swipe','1')}else return}
+  if(!swDrag.on){if(dx>12&&dx>Math.abs(dy)*1.5){swDrag.on=true;swDrag.el.style.transition='none';swDrag.el.setAttribute('data-swipe','1');swWrap(swDrag.el)}else return}
   swDrag.dx=dx;
   const p=Math.max(0,Math.min(1,dx/120));
   swDrag.el.style.transform=`translateX(${Math.min(dx,200)}px)`;
-  swDrag.el.style.background=`rgba(15,123,108,${0.15+0.85*p})`;
-  swDrag.el.style.setProperty('--swp',p);
+  if(swDrag.el._swWrap)swDrag.el._swWrap.style.setProperty('--swp',p);
 },{passive:true});
 function swEnd(){
   if(!swDrag)return;const d=swDrag;swDrag=null;
@@ -1213,7 +1234,7 @@ function swEnd(){
     d.el.style.transition='transform .25s ease';d.el.style.transform='translateX(110%)';
     const id=d.cb.dataset.h;const was=d.cb.checked;
     setTimeout(()=>{d.cb.click();showSwToast(id,was)},150);
-  }else{d.el.style.transition='transform .25s ease, background .25s ease';swReset(d.el)}
+  }else{swReset(d.el)}
 }
 document.addEventListener('pointerup',swEnd);
 document.addEventListener('pointercancel',()=>{if(swDrag){swReset(swDrag.el);swDrag=null}});
