@@ -420,6 +420,12 @@ body.dark .wdlg .sumrow{background:#2a2a2a}
 
 /* PC: saludo grande y bien ajustado dentro de la columna */
 @media(min-width:701px){.hero-h{font-size:58px;line-height:1.02;word-spacing:.04em}.hero{padding:26px 26px 22px}}
+/* móvil: barra inferior flotante tipo Instagram y botón + más pequeño */
+@media(max-width:700px){
+ .side{left:12px!important;right:12px!important;bottom:calc(10px + env(safe-area-inset-bottom))!important;top:auto!important;width:auto!important;border-radius:999px!important;border:1px solid rgba(255,255,255,.1)!important;background:#262626!important;box-shadow:0 10px 30px rgba(0,0,0,.5)!important;padding:6px 10px!important}
+ .fab{width:44px!important;height:44px!important;min-width:0!important;margin:0 4px!important;padding:0!important;border-radius:50%!important;font-size:22px!important;display:flex!important;align-items:center!important;justify-content:center!important;box-shadow:none!important}
+ .fab .lbl{display:none!important}
+}
 </style>
 </head>
 <body>
