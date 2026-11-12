@@ -405,6 +405,9 @@ body.dark .wdlg .sumrow{background:#2a2a2a}
   .stats .stat:last-child:nth-child(odd){grid-column:1/-1}
 }
 
+/* PC: la foto del saludo con un tamaño razonable, centrada a la derecha */
+@media(min-width:701px){.hero-face{width:300px!important;right:28px!important;top:50%!important;transform:translateY(-50%);opacity:.6!important}}
+
 /* PC: el botón Nueva tarea va dentro de la barra lateral, debajo del menú */
 @media(min-width:701px){.side .fab{position:static;display:flex;align-items:center;justify-content:center;width:100%;margin:14px 0 0;padding:12px 16px;box-shadow:none}}
 
