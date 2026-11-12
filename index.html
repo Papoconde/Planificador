@@ -563,6 +563,27 @@ let todoOrden='grupo';
 let todoGrp='__all';
 const todoSeg=()=>`<div style="display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 16px"><button class="btn ${todoOrden==='grupo'?'on':''}" data-tord="grupo">Por grupo</button><button class="btn ${todoOrden==='reciente'?'on':''}" data-tord="reciente">Más recientes arriba</button></div>`;
 const filtGrupo=o=>todoGrp==='__all'||(o.g||'')===todoGrp;
+const PRIO_RANK={Alta:2,Media:1,Baja:0};
+function prioBias(){try{return JSON.parse(localStorage.getItem('planPrioBias')||'{}')}catch(e){return {}}}
+function prioScore(o){
+  const ty=o.ty||'', g=o.g||'';
+  let s=0;
+  if(ty==='Obligatorio')s+=30; else if(ty==='Entrega')s+=25; else if(ty.includes('Adelanto'))s-=10;
+  s+=({Alta:20,Media:10,Baja:0})[o.p]||0;
+  if(g==='Universidad')s+=15;
+  const f=(o.fl||o.di||'').slice(0,10);
+  if(f){const dias=Math.round((new Date(f+'T12:00:00')-new Date(ymd(hoyD)+'T12:00:00'))/864e5);if(dias<=0)s+=40;else if(dias<=2)s+=30;else if(dias<=7)s+=15}
+  s+=prioBias()[ty+'|'+g]||0;
+  return s;
+}
+function learnPrio(o,prev,next){
+  if(!(next in PRIO_RANK))return;
+  const rk=v=>(v in PRIO_RANK)?PRIO_RANK[v]:-1;
+  const d=rk(next)-rk(prev);if(!d)return;
+  const b=prioBias(),k=(o.ty||'')+'|'+(o.g||'');
+  b[k]=Math.max(-20,Math.min(20,(b[k]||0)+5*d));
+  localStorage.setItem('planPrioBias',JSON.stringify(b));
+}
 function statsTodo(){
   const all=act().filter(o=>o.pr!=='Idea');
   const cnt=k=>all.filter(o=>(o.g||'')===k).length;
@@ -582,7 +603,7 @@ function todoHtml(){
   const statsHtml=statsTodo();
   return `<h1>✅ To Do</h1><div class="sub">Pendientes por grupo · ＋ añadir</div>${todoSeg()}`+
     statsHtml+(rows.length?'':'<p class="mut">No hay tareas con este filtro.</p>')+grupos.map(g=>{
-      const list=rows.filter(o=>(o.g||'')===g).sort(byFl);
+      const list=rows.filter(o=>(o.g||'')===g).sort((a,b)=>(prioScore(b)-prioScore(a))||byFl(a,b));
       if(!list.length)return '';
       return `<div class="grp"><span class="dot" style="background:${gc(g)}"></span>${g||'Sin grupo'} <span class="mut">${list.length}</span>
         <button class="btn" style="margin-left:auto" data-newg="${g}">＋ añadir</button></div>`+
@@ -904,15 +925,16 @@ document.addEventListener('change',e=>{
   if('pf' in t.dataset){
     const o=S.find(x=>x.id===t.dataset.pid);if(!o)return;
     const k=t.dataset.pf;
-    const _prev=o.pr;
+    const _prev=o.pr, _prevP=o.p;
     o[k]=k==='h'?t.checked:t.value;
+    if(k==='p')learnPrio(o,_prevP,o.p);
     if(k==='pr'&&o.pr==='Subido'){o.h=true;}
     if(k==='pr'&&o.pr==='Por grabar'&&_prev==='Idea')askId=o.id;
     persist();
     if(['g','f','h','pr'].includes(k))render();
     return;
   }
-  if('field' in t.dataset){const o=S.find(x=>x.id===t.dataset.id);if(o){const _prev=o.pr;o[t.dataset.field]=t.value;if(t.dataset.field==='pr'&&t.value==='Subido'){o.h=true;}if(t.dataset.field==='pr'&&t.value==='Por grabar'&&_prev==='Idea')askId=o.id;persist();render()}return}
+  if('field' in t.dataset){const o=S.find(x=>x.id===t.dataset.id);if(o){const _prev=o.pr;const _prevP=o.p;o[t.dataset.field]=t.value;if(t.dataset.field==='p')learnPrio(o,_prevP,o.p);if(t.dataset.field==='pr'&&t.value==='Subido'){o.h=true;}if(t.dataset.field==='pr'&&t.value==='Por grabar'&&_prev==='Idea')askId=o.id;persist();render()}return}
   if('h' in t.dataset){const o=S.find(x=>x.id===t.dataset.h);if(o){o.h=t.checked;o.hAt=o.h?ymd(hoyD):'';persist();render()}}
 });
 
