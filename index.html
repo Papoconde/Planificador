@@ -935,7 +935,7 @@ document.addEventListener('click',e=>{if(!e.target.closest('[data-pedit]'))retur
 document.addEventListener('change',e=>{if(e.target.dataset&&'cn' in e.target.dataset&&e.target.value){compP='n';compN=+e.target.value;render()}});
 document.addEventListener('click',e=>{const p=e.target.closest('[data-cp]');if(!p)return;compP=p.dataset.cp;render()});
 document.addEventListener('click',e=>{const p=e.target.closest('[data-co]');if(!p)return;compO=p.dataset.co;render()});
-document.addEventListener('click',e=>{const b=e.target.closest('[data-cg]');if(!b)return;compG=b.dataset.cg;render()});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-cg]');if(!b)return;const old=document.getElementById('segind');const from=old?{l:old.offsetLeft,w:old.offsetWidth}:null;compG=b.dataset.cg;render();const ind=document.getElementById('segind');const nb=document.querySelector('#seg [data-cg="'+compG+'"]');if(ind&&nb){if(from){ind.style.transition='none';ind.style.width=from.w+'px';ind.style.transform='translateX('+from.l+'px)';void ind.offsetWidth;ind.style.transition=''}ind.style.width=nb.offsetWidth+'px';ind.style.transform='translateX('+nb.offsetLeft+'px)'}});
 function taskIdFrom(el){
   let n=el;
   while(n&&n!==document.body){
