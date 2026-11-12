@@ -504,7 +504,7 @@ function selInl(o,field,list){return `<select data-field="${field}" data-id="${o
 function fromArr(a,i){const o={id:'r'+i};K.forEach((k,j)=>{o[k]=a[j]==null?'':a[j]});o.h=!!o.h;if(!o.tr&&o.cu&&String(o.t).startsWith('🎙️ Pendiente de resumir')){o.tr=o.cu;o.cu=''}return o}
 function toArr(o){return K.map(k=>k==='h'?(o.h?1:0):(o[k]||''))}
 function persist(){
-  const data={rows:S.map(toArr)};
+  const data={rows:S.map(toArr),bias:prioBiasData};
   try{localStorage.setItem('planner-v3',JSON.stringify(data))}catch(e){}
   if(sb&&sbUser)sbSave(data);
 }
@@ -566,7 +566,8 @@ let todoGrp='__all';
 const todoSeg=()=>`<div style="display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 16px"><button class="btn ${todoOrden==='grupo'?'on':''}" data-tord="grupo">Por grupo</button><button class="btn ${todoOrden==='reciente'?'on':''}" data-tord="reciente">Más recientes arriba</button></div>`;
 const filtGrupo=o=>todoGrp==='__all'||(o.g||'')===todoGrp;
 const PRIO_RANK={Alta:2,Media:1,Baja:0};
-function prioBias(){try{return JSON.parse(localStorage.getItem('planPrioBias')||'{}')}catch(e){return {}}}
+let prioBiasData=(()=>{try{return JSON.parse(localStorage.getItem('planPrioBias')||'{}')||{}}catch(e){return {}}})();
+function prioBias(){return prioBiasData}
 function prioScore(o){
   const ty=o.ty||'', g=o.g||'';
   let s=0;
@@ -582,9 +583,9 @@ function learnPrio(o,prev,next){
   if(!(next in PRIO_RANK))return;
   const rk=v=>(v in PRIO_RANK)?PRIO_RANK[v]:-1;
   const d=rk(next)-rk(prev);if(!d)return;
-  const b=prioBias(),k=(o.ty||'')+'|'+(o.g||'');
+  const b=prioBiasData,k=(o.ty||'')+'|'+(o.g||'');
   b[k]=Math.max(-20,Math.min(20,(b[k]||0)+5*d));
-  localStorage.setItem('planPrioBias',JSON.stringify(b));
+  try{localStorage.setItem('planPrioBias',JSON.stringify(b))}catch(e){}
 }
 function statsTodo(){
   const all=act().filter(o=>o.pr!=='Idea');
@@ -1149,6 +1150,7 @@ async function afterLogin(){
   const r=await sb.from('planner_state').select('data').eq('id','main').maybeSingle();
   if(!r.error&&r.data&&r.data.data&&Array.isArray(r.data.data.rows)){
     S=r.data.data.rows.map(fromArr);
+    if(r.data.data.bias&&typeof r.data.data.bias==='object'){prioBiasData=r.data.data.bias;try{localStorage.setItem('planPrioBias',JSON.stringify(prioBiasData))}catch(e){}}
     try{localStorage.setItem('planner-v3',JSON.stringify(r.data.data))}catch(e){}
   }
   sync='Sincronizado';
@@ -1157,6 +1159,7 @@ async function afterLogin(){
     const d=payload.new&&payload.new.data;
     if(!d||!Array.isArray(d.rows)||JSON.stringify(d)===lastSaved)return;
     S=d.rows.map(fromArr);
+    if(d.bias&&typeof d.bias==='object')prioBiasData=d.bias;
     try{localStorage.setItem('planner-v3',JSON.stringify(d))}catch(e){}
     render();
   }).subscribe();
