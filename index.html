@@ -278,6 +278,8 @@ body.dark .wx{color:#8a8880}
   
 </div>
 <script>
+document.addEventListener('selectstart',e=>{if(!e.target.closest||!e.target.closest('textarea,input,[contenteditable]'))e.preventDefault()});
+document.addEventListener('contextmenu',e=>{if(!e.target.closest||!e.target.closest('textarea,input,[contenteditable]'))e.preventDefault()});
 const K=['t','h','g','sg','a','p','ty','pr','e','f','tv','hs','du','fr','d','n','fl','di','pu','cu','tr'];
 const L={g:['Universidad','Redes','Personal','WithDesign'],sg:['🎬 Vídeos','📌 Otros','🖌️ Diseño'],a:['Inglés','Proyecto I','Infografía','Diseño crítico','Cultura visual'],p:['Alta','Media','Baja'],ty:['Obligatorio','⏩ Adelanto','Opcional','Entrega'],pr:['Idea','Por grabar','Grabado','Editado','Subido'],e:['Sin estado','Sin empezar','En curso','Listo'],f:['Reel','Carrusel'],tv:['Logo / curiosidad','Rebrand','Tipografía','Opinión','Reto','Personal']};
 const PROPS=[
