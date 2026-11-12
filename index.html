@@ -264,6 +264,8 @@ body.dark .wx{color:#8a8880}
 
 @media(max-width:700px){.side{background:#e5322d!important;border-top:0!important}.side .nav{color:#fff}.side .nav.on{background:rgba(255,255,255,.22)!important;box-shadow:none}.navind{background:rgba(255,255,255,.22)!important}.fab{background:#fff;color:#e5322d;box-shadow:0 8px 22px rgba(0,0,0,.25)}.nav .ico{display:flex;align-items:center;justify-content:center}}
 h1,h2,h3,.wq,.stat b,.picon{font-family:"Space Grotesk",Inter,sans-serif;letter-spacing:-.01em}
+
+.hero{background:#e5322d;color:#fff;border-radius:22px;padding:22px 22px 20px;margin:4px 0 18px;box-shadow:0 10px 26px rgba(229,50,45,.28)}.hero-t{font-size:14px;font-weight:600;opacity:.9}.hero-n{font-family:"Space Grotesk",Inter,sans-serif;font-size:64px;font-weight:700;line-height:1;margin:8px 0 4px}.hero-s{font-size:17px;font-weight:600}.hero-bar{height:8px;background:rgba(255,255,255,.3);border-radius:8px;margin:14px 0;overflow:hidden}.hero-bar div{height:100%;background:#fff;border-radius:8px}.hero-f{font-size:14px;opacity:.92}.stats .stat b{font-family:"Space Grotesk",Inter,sans-serif;font-size:40px;line-height:1}.stats .stat span{font-size:13px}
 </style>
 </head>
 <body>
@@ -486,9 +488,7 @@ function resumenHtml(){
   const hoyTxt=hoyD.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'});
   const term=`<div style="display:flex;flex-direction:column;align-items:center;width:64px;flex-shrink:0"><div style="position:relative;width:26px;height:190px;border:2px solid #d8d6d1;border-radius:14px 14px 4px 4px;background:#f3f2ef;overflow:hidden"><div style="position:absolute;bottom:0;left:0;right:0;height:${pctS}%;background:linear-gradient(${tc}88,${tc});transition:height .6s"></div></div><div style="width:48px;height:48px;border-radius:50%;background:${tc};margin-top:-6px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px">${pctS}%</div></div>`;
   return `<div style="display:flex;align-items:center;gap:14px"><img src="profile.jpg" alt="Pablo" style="width:56px;height:56px;border-radius:50%;object-fit:cover;flex:0 0 56px"><div><h1 style="margin:0">${saludo}, Pablo 👋</h1><div class="sub">${esc(hoyTxt)}</div></div></div>
-    <div class="cardbox" style="display:flex;gap:22px;align-items:center;flex-wrap:wrap;margin-bottom:18px">${term}
-      <div style="flex:1;min-width:200px"><div class="mut" style="font-weight:600">Así vas esta semana</div><div style="font-size:18px;font-weight:600;margin:4px 0 6px">${semDone} de ${semAll.length} hechas</div><div style="color:#37352f">${esc(frase)}</div></div>
-    </div>
+    <div class="hero"><div class="hero-t">Así vas esta semana</div><div class="hero-n">${pctS}%</div><div class="hero-s">${semDone} de ${semAll.length} hechas</div><div class="hero-bar"><div style="width:${pctS}%"></div></div><div class="hero-f">${esc(frase)}</div></div>
     <div class="stats">${rstat('pendT',pendT,'tareas de uni y personal sin hacer','#37352f')}${rstat('pendV',pendV,'vídeos en proceso','#d44c8f')}${rstat('subMes',subMes,'vídeos subidos este mes','#0f7b6c')}${rstat('semPend',semPend,'tareas que te quedan esta semana','#2383e2')}</div>
     <div class="grp">📌 Próximas fechas límite</div>
     ${proximas.map(cardDate).join('')||'<p class="mut">No tienes fechas límite pendientes.</p>'}${settingsHtml()}`;
