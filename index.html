@@ -429,6 +429,9 @@ body.dark .wdlg .sumrow{background:#2a2a2a}
 }
 /* botón de grabar idea: icono del micro grande */
 #vbtn svg{width:58px!important;height:58px!important}
+/* asistente: la caja tiene altura fija y los botones quedan abajo, así no se mueven al cambiar de paso */
+.wdlg{display:flex;flex-direction:column;height:min(540px,88vh);max-height:88vh;overflow:auto}
+.wdlg .wbtns{margin-top:auto;padding-top:14px}
 </style>
 </head>
 <body>
