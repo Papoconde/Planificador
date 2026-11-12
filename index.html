@@ -886,7 +886,7 @@ async function startVoice(){
   document.body.insertAdjacentHTML('beforeend','<div class="ov" id="voice"><div class="dlg2"><h3>💡 Idea de contenido</h3><p class="mut" id="vhint">Mantén pulsado el micro y di tu idea</p><div id="vtxt" style="min-height:48px;text-align:left;margin:12px 0;font-size:15px;white-space:pre-wrap"></div><button id="vbtn" style="width:110px;height:110px;border-radius:50%;border:0;background:#d44c8f;color:#fff;font-size:40px;cursor:pointer;touch-action:none;user-select:none">🎙️</button><div class="wbtns" style="justify-content:center;margin-top:14px"><button class="btn" data-vcancel>Cancelar</button></div><textarea id="vman" class="wtxt" rows="3" placeholder="Escribe aquí o pulsa el micro del teclado para dictar" style="margin-top:14px"></textarea><button class="btn pri" data-vsave-manual>Guardar idea</button></div></div>');
   const btn=document.getElementById('vbtn');
   const hint=document.getElementById('vhint');
-  const manual=()=>{document.getElementById('vtxt').innerHTML='<textarea id="vman" class="wtxt" rows="4" placeholder="Escribe tu idea..."></textarea><button class="btn pri" data-vsave-manual>Guardar idea</button>';btn.style.display='none';hint.textContent='Sin micro aquí. Escribe la idea.'};
+  const manual=()=>{const v=document.getElementById('vtxt');if(v)v.style.display='none';btn.style.display='none';hint.textContent='Escribe la idea abajo'};
   btn.style.webkitUserSelect='none';btn.style.userSelect='none';btn.style.webkitTouchCallout='none';btn.style.webkitTapHighlightColor='transparent';
   btn.addEventListener('contextmenu',e=>e.preventDefault());
   btn.addEventListener('selectstart',e=>e.preventDefault());
