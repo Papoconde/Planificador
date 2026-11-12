@@ -915,7 +915,7 @@ async function startVoice(){
     down=e=>{e.preventDefault();VS.finalT='';VS.live='';VS.on=true;btn.style.background='#b03a78';hint.textContent='Te escucho… suelta para guardar';dict.start().catch(()=>{VS.on=false;manual()})};
     up=()=>{btn.style.background='#d44c8f';dict.stop().catch(()=>{})};
   } else {
-    const rec=new SR();rec.lang='es-ES';rec.continuous=true;rec.interimResults=true;
+    const rec=new SR();rec.lang='es-ES';rec.continuous=false;rec.interimResults=false;
     voiceRec=rec;
     rec.onresult=ev=>{let it='';for(let i=ev.resultIndex;i<ev.results.length;i++){const r=ev.results[i];if(r.isFinal)VS.finalT+=r[0].transcript+' ';else it+=r[0].transcript}VS.live=it;show()};
     rec.onend=finish;
