@@ -621,6 +621,7 @@ function resumenHtml(){
   const subMes=S.filter(o=>o.g==='Redes'&&o.pr==='Subido'&&(o.pu||'').slice(0,7)===ym).length;
   const proximas=act().filter(o=>o.fl).sort(byFl).slice(0,4);
   const h=hoyD.getHours();
+  const perf=perfilCfg();
   const saludo=h<14?'Buenos días':h<21?'Buenas tardes':'Buenas noches';
   const frase=!semAll.length?'Esta semana no tienes nada programado. Buen momento para planificar algo nuevo.':pctS===0?'Todavía no has marcado nada esta semana. Empieza por la más fácil.':pctS<50?'Vas arrancando. Un par más y la semana cambia de color.':pctS<100?'Vas muy bien, te queda poco para cerrar la semana.':'¡Semana completa! Buen trabajo.';
   const stat=(n,l,c)=>`<div class="stat"><b style="color:${c}">${n}</b><span>${l}</span></div>`;
@@ -629,7 +630,7 @@ function resumenHtml(){
   const tc=pctS<34?'#d44c47':pctS<67?'#d9a20f':'#0f7b6c';
   const hoyTxt=hoyD.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'});
   const term=`<div style="display:flex;flex-direction:column;align-items:center;width:64px;flex-shrink:0"><div style="position:relative;width:26px;height:190px;border:2px solid #d8d6d1;border-radius:14px 14px 4px 4px;background:#f3f2ef;overflow:hidden"><div style="position:absolute;bottom:0;left:0;right:0;height:${pctS}%;background:linear-gradient(${tc}88,${tc});transition:height .6s"></div></div><div style="width:48px;height:48px;border-radius:50%;background:${tc};margin-top:-6px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px">${pctS}%</div></div>`;
-  return `<div class="hero"><img class="hero-face" src="profile.jpg" alt=""><div class="hero-d">${esc(hoyTxt)}</div><div class="hero-h">${saludo}, Pablo</div><div class="hero-t">Así vas esta semana</div><div class="hero-n">${pctS}%</div><div class="hero-s">${semDone} de ${semAll.length} hechas</div><div class="thermo"><div class="tt"><div style="width:${pctS}%"></div></div><div class="tb">${semDone}/${semAll.length}</div></div><div class="hero-f">${esc(frase)}</div></div>
+  return `<div class="hero">${perf.foto?`<img class="hero-face" src="${esc(perf.foto)}" alt="">`:''}<div class="hero-d">${esc(hoyTxt)}</div><div class="hero-h">${saludo}${perf.nombre?", "+esc(perf.nombre):""}</div><div class="hero-t">Así vas esta semana</div><div class="hero-n">${pctS}%</div><div class="hero-s">${semDone} de ${semAll.length} hechas</div><div class="thermo"><div class="tt"><div style="width:${pctS}%"></div></div><div class="tb">${semDone}/${semAll.length}</div></div><div class="hero-f">${esc(frase)}</div></div>
     <div class="stats">${rstat('pendT',pendT,'tareas de esta semana sin hacer','#2383e2')}${rstat('pendV',pendV,'vídeos en proceso','#d44c8f')}${rstat('subMes',subMes,'vídeos subidos este mes','#0f7b6c')}</div>
     <div class="grp">📌 Próximas fechas límite</div>
     ${proximas.map(cardDate).join('')||'<p class="mut">No tienes fechas límite pendientes.</p>'}${settingsHtml()}`;
@@ -651,9 +652,19 @@ function resumenHtmlOld(){
     <div class="grp">⏰ Próximas fechas</div>
     ${proximas.map(o=>card(o)).join('')||'<p class="mut">No tienes fechas límite pendientes.</p>'}${settingsHtml()}`;
 }
+function perfilCfg(){
+  const em=((typeof sbUser!=='undefined'&&sbUser&&sbUser.email)||'').toLowerCase();
+  const esPablo=em==='pablocondegarcia03@gmail.com';
+  let c={};try{c=JSON.parse(localStorage.getItem('planner-perfil')||'{}')}catch(e){}
+  return {nombre:c.nombre!==undefined?c.nombre:(esPablo?'Pablo':''),foto:c.foto!==undefined?c.foto:(esPablo?'profile.jpg':'')};
+}
+function savePerfil(p){let c={};try{c=JSON.parse(localStorage.getItem('planner-perfil')||'{}')}catch(e){}Object.assign(c,p);try{localStorage.setItem('planner-perfil',JSON.stringify(c))}catch(e){}}
 function settingsHtml(){
+  const perf=perfilCfg();
   return `<div class="grp" style="margin-top:26px">⚙️ Ajustes</div>
-    <div class="cardbox" style="display:flex;justify-content:space-between;align-items:center;gap:12px"><span>Modo oscuro</span><button class="btn ${dark?'on':''}" data-theme>${dark?'Activado':'Desactivado'}</button></div>`;
+    <div class="cardbox" style="display:flex;justify-content:space-between;align-items:center;gap:12px"><span>Modo oscuro</span><button class="btn ${dark?'on':''}" data-theme>${dark?'Activado':'Desactivado'}</button></div>
+    <div class="grp" style="margin-top:18px">Perfil</div>
+    <div class="cardbox" style="display:grid;gap:12px"><label style="display:grid;gap:6px"><span class="mut">Nombre</span><input class="wtxt" style="margin:0" data-pnombre value="${esc(perf.nombre)}" placeholder="Tu nombre"></label><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><label class="btn" style="cursor:pointer">Cambiar foto<input type="file" accept="image/*" data-pfoto style="display:none"></label>${perf.foto?'<button class="btn del" data-pquitar>Quitar foto</button>':''}</div></div>`;
 }
 function cardDate(o){const d=new Date(o.fl.slice(0,10)+'T12:00:00');const mon=d.toLocaleDateString('es-ES',{month:'short'}).replace('.','');return `<div class="item ${o.h?'done':''}" style="border-left:4px solid ${ccol(o)};align-items:center"><input type="checkbox" data-h="${o.id}" ${o.h?'checked':''}><div class="dbadge"><b>${d.getDate()}</b><span>${esc(mon)}</span></div><div style="flex:1;min-width:0"><a class="tt" data-open="${o.id}">${ticon(o)}${esc(String(o.t||'Sin título').replace(/^\s*(⏩|📤|⚪)\s*/,''))}</a><div class="meta">${o.a?`<span class="pill">${esc(o.a)}</span>`:''}${ppill(o)}</div></div></div>`}
 function semanaTabla(){
@@ -834,6 +845,16 @@ document.addEventListener('pointerup',e=>{if(!segDrag)return;const d=segDrag;seg
 document.addEventListener('click',e=>{const r=e.target.closest('[data-rf]');if(!r)return;resFiltro=r.dataset.rf;section='rlist';page=null;render()});
 document.addEventListener('click',e=>{const t=e.target.closest('[data-tord]');if(!t)return;todoOrden=t.dataset.tord;render()});
 document.addEventListener('click',e=>{const g=e.target.closest('[data-tgrp]');if(!g)return;todoGrp=g.dataset.tgrp;render()});
+document.addEventListener('click',e=>{if(!e.target.closest||!e.target.closest('[data-pquitar]'))return;savePerfil({foto:''});render()});
+document.addEventListener('change',e=>{
+  const t=e.target;
+  if(t.matches&&t.matches('[data-pnombre]')){savePerfil({nombre:t.value.trim()});render();return}
+  if(t.matches&&t.matches('[data-pfoto]')&&t.files&&t.files[0]){
+    const fr=new FileReader();
+    fr.onload=()=>{const im=new Image();im.onload=()=>{const S=256,c=document.createElement('canvas');c.width=S;c.height=S;const x=c.getContext('2d');const m=Math.min(im.width,im.height);x.drawImage(im,(im.width-m)/2,(im.height-m)/2,m,m,0,0,S,S);savePerfil({foto:c.toDataURL('image/jpeg',.85)});render()};im.src=fr.result};
+    fr.readAsDataURL(t.files[0]);
+  }
+});
 document.addEventListener('click',e=>{if(!e.target.closest('[data-pedit]'))return;pEdit=!pEdit;render()});
 document.addEventListener('change',e=>{if(e.target.dataset&&'cn' in e.target.dataset&&e.target.value){compP='n';compN=+e.target.value;render()}});
 document.addEventListener('click',e=>{const p=e.target.closest('[data-cp]');if(!p)return;compP=p.dataset.cp;render()});
