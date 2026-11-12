@@ -964,7 +964,7 @@ function saveIdea(text){
 }
 function startVoice(){
   closeVoice();
-  document.body.insertAdjacentHTML('beforeend','<div class="ov" id="voice"><div class="dlg2"><h3>💡 Idea de contenido</h3><p class="mut" id="vhint">Mantén pulsado el micro y di tu idea</p><div id="vtxt" style="min-height:48px;text-align:left;margin:12px 0;font-size:15px;white-space:pre-wrap"></div><button id="vbtn" style="width:110px;height:110px;border-radius:50%;border:0;background:linear-gradient(135deg,#ffffff,#8fb8ff);color:#191919;font-size:64px;cursor:pointer;touch-action:none;user-select:none">🎙️</button><div class="wbtns" style="justify-content:center;margin-top:14px"><button class="btn" data-vcancel>Cancelar</button></div></div></div>');
+  document.body.insertAdjacentHTML('beforeend','<div class="ov" id="voice"><div class="dlg2"><h3>💡 Idea de contenido</h3><p class="mut" id="vhint">Mantén pulsado el micro y di tu idea</p><div id="vtxt" style="min-height:48px;text-align:left;margin:12px 0;font-size:15px;white-space:pre-wrap"></div><button id="vbtn" style="width:110px;height:110px;border-radius:50%;border:0;background:#9b9a97;color:#191919;font-size:64px;cursor:pointer;touch-action:none;user-select:none">🎙️</button><div class="wbtns" style="justify-content:center;margin-top:14px"><button class="btn" data-vcancel>Cancelar</button></div></div></div>');
   {const _v=document.getElementById('voice');if(_v)_v.innerHTML=noEmo(_v.innerHTML);}
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   const btn=document.getElementById('vbtn');
@@ -980,8 +980,8 @@ function startVoice(){
   rec.onresult=ev=>{let interim='';for(let i=ev.resultIndex;i<ev.results.length;i++){const r=ev.results[i];if(r.isFinal)finalT+=r[0].transcript+' ';else interim+=r[0].transcript}voiceTxt=finalT+interim;const el=document.getElementById('vtxt');if(el)el.textContent=voiceTxt};
   rec.onend=()=>{const t=voiceTxt.trim();closeVoice();if(t)saveIdea(t)};
   rec.onerror=()=>{const h=document.getElementById('vhint');if(h)h.textContent='No te he oído, prueba otra vez'};
-  const down=e=>{e.preventDefault();finalT='';voiceTxt='';btn.style.background='linear-gradient(135deg,#d6e4ff,#6f9ee0)';document.getElementById('vhint').textContent='Te escucho… suelta para guardar';try{rec.start()}catch(err){}};
-  const up=()=>{btn.style.background='linear-gradient(135deg,#ffffff,#8fb8ff)';try{rec.stop()}catch(err){}};
+  const down=e=>{e.preventDefault();finalT='';voiceTxt='';btn.style.background='linear-gradient(135deg,#8fb8ff,#2383e2)';document.getElementById('vhint').textContent='Te escucho… suelta para guardar';try{rec.start()}catch(err){}};
+  const up=()=>{btn.style.background='#9b9a97';try{rec.stop()}catch(err){}};
   btn.addEventListener('pointerdown',down);btn.addEventListener('pointerup',up);btn.addEventListener('pointercancel',up);
 }
 document.addEventListener('click',e=>{const b=e.target.closest('[data-vcancel],[data-vsave-manual]');if(!b)return;if('vcancel' in b.dataset){if(voiceRec){voiceRec.onend=null;try{voiceRec.abort()}catch(err){}}closeVoice();return}const t=(document.getElementById('vman')||{}).value||'';closeVoice();if(t.trim())saveIdea(t.trim())});
@@ -1116,7 +1116,7 @@ function saveIdea(text){
 }
 async function startVoice(){
   closeVoice();
-  document.body.insertAdjacentHTML('beforeend','<div class="ov" id="voice"><div class="dlg2"><h3>💡 Idea de contenido</h3><p class="mut" id="vhint">Mantén pulsado el micro y di tu idea</p><div id="vtxt" style="min-height:48px;text-align:left;margin:12px 0;font-size:15px;white-space:pre-wrap"></div><button id="vbtn" style="width:110px;height:110px;border-radius:50%;border:0;background:linear-gradient(135deg,#ffffff,#8fb8ff);color:#191919;font-size:64px;cursor:pointer;touch-action:none;user-select:none">🎙️</button><div class="wbtns" style="justify-content:center;margin-top:14px"><button class="btn" data-vcancel>Cancelar</button></div><textarea id="vman" class="wtxt" rows="3" placeholder="Escribe aquí o pulsa el micro del teclado para dictar" style="margin-top:14px"></textarea><button class="btn pri" data-vsave-manual>Guardar idea</button></div></div>');
+  document.body.insertAdjacentHTML('beforeend','<div class="ov" id="voice"><div class="dlg2"><h3>💡 Idea de contenido</h3><p class="mut" id="vhint">Mantén pulsado el micro y di tu idea</p><div id="vtxt" style="min-height:48px;text-align:left;margin:12px 0;font-size:15px;white-space:pre-wrap"></div><button id="vbtn" style="width:110px;height:110px;border-radius:50%;border:0;background:#9b9a97;color:#191919;font-size:64px;cursor:pointer;touch-action:none;user-select:none">🎙️</button><div class="wbtns" style="justify-content:center;margin-top:14px"><button class="btn" data-vcancel>Cancelar</button></div><textarea id="vman" class="wtxt" rows="3" placeholder="Escribe aquí o pulsa el micro del teclado para dictar" style="margin-top:14px"></textarea><button class="btn pri" data-vsave-manual>Guardar idea</button></div></div>');
   {const _v=document.getElementById('voice');if(_v)_v.innerHTML=noEmo(_v.innerHTML);}
   const btn=document.getElementById('vbtn');
   const hint=document.getElementById('vhint');
@@ -1146,16 +1146,16 @@ async function startVoice(){
       dict.onFinal(({text})=>{VS.finalT+=text+' ';VS.live='';if(window.VS_show)window.VS_show()});
       dict.onState(({state})=>{if(state==='idle'&&window.VS_finish)window.VS_finish()});
     }
-    down=e=>{e.preventDefault();VS.finalT='';VS.live='';VS.on=true;btn.style.background='linear-gradient(135deg,#d6e4ff,#6f9ee0)';hint.textContent='Te escucho… suelta para guardar';dict.start().catch(()=>{VS.on=false;manual()})};
-    up=()=>{btn.style.background='linear-gradient(135deg,#ffffff,#8fb8ff)';dict.stop().catch(()=>{})};
+    down=e=>{e.preventDefault();VS.finalT='';VS.live='';VS.on=true;btn.style.background='linear-gradient(135deg,#8fb8ff,#2383e2)';hint.textContent='Te escucho… suelta para guardar';dict.start().catch(()=>{VS.on=false;manual()})};
+    up=()=>{btn.style.background='#9b9a97';dict.stop().catch(()=>{})};
   } else {
     const rec=new SR();rec.lang='es-ES';rec.continuous=true;rec.interimResults=true;
     voiceRec=rec;
     rec.onresult=ev=>{let it='';for(let i=ev.resultIndex;i<ev.results.length;i++){const r=ev.results[i];if(r.isFinal)VS.finalT+=r[0].transcript+' ';else it+=r[0].transcript}VS.live=it;show()};
     rec.onend=finish;
     rec.onerror=e=>{const c=e&&e.error;if(c==='not-allowed'||c==='service-not-allowed'){VS.on=false;manual();return}hint.textContent=c==='network'?'Sin conexión para el dictado, escribe la idea':c==='aborted'?'Mantén pulsado un poco más':'No te he oído, prueba otra vez'};
-    down=e=>{e.preventDefault();VS.finalT='';VS.live='';VS.on=true;btn.style.background='linear-gradient(135deg,#d6e4ff,#6f9ee0)';hint.textContent='Te escucho… suelta para guardar';window.VS_used=true;try{rec.start()}catch(err){}};
-    up=()=>{btn.style.background='linear-gradient(135deg,#ffffff,#8fb8ff)';try{rec.stop()}catch(err){}};
+    down=e=>{e.preventDefault();VS.finalT='';VS.live='';VS.on=true;btn.style.background='linear-gradient(135deg,#8fb8ff,#2383e2)';hint.textContent='Te escucho… suelta para guardar';window.VS_used=true;try{rec.start()}catch(err){}};
+    up=()=>{btn.style.background='#9b9a97';try{rec.stop()}catch(err){}};
   }
   btn.addEventListener('pointerdown',down);
   btn.addEventListener('pointerup',up);
