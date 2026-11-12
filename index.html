@@ -420,8 +420,9 @@ function visibleKeys(d){
 function frParts(v){const [a,b]=String(v||'').split('-');return [a||'',b||'']}
 function frCtl(o,id){const [a,b]=frParts(o.fr);return `<div data-frw="${id}" style="display:flex;gap:8px;align-items:center"><input type="time" data-frp="0" value="${a}" style="width:auto"><span class="mut">→</span><input type="time" data-frp="1" value="${b}" style="width:auto"></div>`}
 function card(o,hora){
-  const fd=(o.fl&&!hora)?new Date(o.fl.slice(0,10)+'T12:00:00'):null;
-  const badge=fd?`<div class="dbadge"><b>${fd.getDate()}</b><span>${esc(fd.toLocaleDateString('es-ES',{month:'short'}).replace('.',''))}</span></div>`:'';
+  const ref=o.fl||o.di;
+  const fd=(ref&&!hora)?new Date(ref.slice(0,10)+'T12:00:00'):null;
+  const badge=(hora)?'':fd?`<div class="dbadge"><b>${fd.getDate()}</b><span>${esc(fd.toLocaleDateString('es-ES',{month:'short'}).replace('.',''))}</span></div>`:`<div class="dbadge"><b>—</b><span>sin</span></div>`;
   const strip=(o.g||o.a)?`border-left:4px solid ${ccol(o)};`:'';
   return `<div class="item ${o.h?'done':''}" style="${strip}align-items:center">
     <input type="checkbox" data-h="${o.id}" ${o.h?'checked':''}>${badge}
