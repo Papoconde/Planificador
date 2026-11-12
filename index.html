@@ -914,13 +914,15 @@ async function startVoice(){
     }
     down=e=>{e.preventDefault();VS.finalT='';VS.live='';VS.on=true;btn.style.background='#b03a78';hint.textContent='Te escucho… suelta para guardar';dict.start().catch(()=>{VS.on=false;manual()})};
     up=()=>{btn.style.background='#d44c8f';dict.stop().catch(()=>{})};
+  } else if(window.VS_used){
+    manual();hint.textContent='En iPhone el dictado solo funciona una vez por carga. Usa el micro del teclado para dictar';
   } else {
     const rec=new SR();rec.lang='es-ES';rec.continuous=true;rec.interimResults=true;
     voiceRec=rec;
     rec.onresult=ev=>{let it='';for(let i=ev.resultIndex;i<ev.results.length;i++){const r=ev.results[i];if(r.isFinal)VS.finalT+=r[0].transcript+' ';else it+=r[0].transcript}VS.live=it;show()};
     rec.onend=finish;
     rec.onerror=e=>{const c=e&&e.error;if(c==='not-allowed'||c==='service-not-allowed'){VS.on=false;manual();return}hint.textContent=c==='network'?'Sin conexión para el dictado, escribe la idea':c==='aborted'?'Mantén pulsado un poco más':'No te he oído, prueba otra vez'};
-    down=e=>{e.preventDefault();VS.finalT='';VS.live='';VS.on=true;btn.style.background='#b03a78';hint.textContent='Te escucho… suelta para guardar';try{rec.start()}catch(err){}};
+    down=e=>{e.preventDefault();VS.finalT='';VS.live='';VS.on=true;btn.style.background='#b03a78';hint.textContent='Te escucho… suelta para guardar';window.VS_used=true;try{rec.start()}catch(err){}};
     up=()=>{btn.style.background='#d44c8f';try{rec.stop()}catch(err){}};
   }
   btn.addEventListener('pointerdown',down);
