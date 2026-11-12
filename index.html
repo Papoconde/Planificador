@@ -860,22 +860,9 @@ async function afterLogin(){
 })();
 function saveIdea(text){
   const clean=text.replace(/\s+/g,' ').trim();
-  const m=clean.match(/^(.{1,60}?)([.!?]|$)/);
-  let titulo=(m?m[1]:clean.slice(0,60)).trim();
-  let d=clean.length>titulo.length+1?clean.slice(0,300):'';
-  (async()=>{
-    try{
-      const sample=await claude.use('sample');
-      if(sample){
-        const r=await sample('Esta es la transcripción de una idea de contenido para redes de un diseñador gráfico, en español:\n\n"'+clean+'"\n\nDevuelve solo un JSON con dos campos: "titulo" (máximo 6 palabras) y "descripcion" (1 o 2 frases que resuman la idea). Sin texto fuera del JSON.');
-        const j=JSON.parse(r.text.match(/\{[\s\S]*\}/)[0]);
-        if(j.titulo)titulo=String(j.titulo);
-        if(j.descripcion)d=String(j.descripcion);
-      }
-    }catch(err){}
-    S.push({id:'n'+Date.now(),h:false,g:'Redes',pr:'Idea',t:titulo,d:d,cu:clean});
-    persist();section='redes';page=null;render();
-  })();
+  const hora=new Date().toLocaleString('es-ES',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+  S.push({id:'n'+Date.now(),h:false,g:'Redes',pr:'Idea',t:'🎙️ Pendiente de resumir · '+hora,d:'',cu:clean});
+  persist();section='redes';page=null;render();
 }
 async function startVoice(){
   closeVoice();
