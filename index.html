@@ -611,7 +611,7 @@ function redesHtml(){
       const items=redes.filter(o=>o.pr===col && (col!=='Subido'||!o.pu||o.pu.slice(0,10)>=hace30));
       if(col==='Idea'&&!showIdeas)return '';
       const oculta=false;
-      const btn=col==='Idea'?`<button class="btn" data-toggle-ideas style="padding:2px 8px;font-size:12px">${showIdeas?'ocultar':'mostrar'}</button>`:'';
+      const btn='';
       return `<div class="col" data-drop="${col}"><h4><span>${col}</span><span style="display:flex;gap:6px;align-items:center"><span class="mut">${items.length}</span>${btn}</span></h4>${oculta?`<p class="mut">${items.length} ideas ocultas</p>`:items.map(o=>`<div draggable="true" data-drag="${o.id}" style="cursor:grab">${redCard(o)}</div>`).join('')}</div>`;
     }).join('')}</div>`;
   }
