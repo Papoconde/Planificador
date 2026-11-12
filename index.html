@@ -338,6 +338,8 @@ body.dark .btn.on,body.dark .wopt.on,body.dark .cxp.on{background:#2a2a2a!import
 .tt{background:none!important;height:auto!important;border-radius:0!important;overflow:visible!important;flex:initial!important}
 .thermo .tt{height:16px!important;border-radius:16px!important;overflow:hidden!important;flex:1!important;background:rgba(255,255,255,.3)!important}
 .thermo .tt div{background:linear-gradient(90deg,#ffffff,#8fb8ff)!important}
+@keyframes thermoGrow{from{width:0}}
+.thermo .tt div.grow{animation:thermoGrow 1s cubic-bezier(.2,.8,.2,1) both}
 /* la franja de color de la asignatura es border-left en línea */
 .item,.trow{border-top:0!important;border-right:0!important;border-bottom:0!important}
 
@@ -717,7 +719,7 @@ function resumenHtml(){
   const tc=pctS<34?'#d44c47':pctS<67?'#d9a20f':'#0f7b6c';
   const hoyTxt=hoyD.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'});
   const term=`<div style="display:flex;flex-direction:column;align-items:center;width:64px;flex-shrink:0"><div style="position:relative;width:26px;height:190px;border:2px solid #d8d6d1;border-radius:14px 14px 4px 4px;background:#f3f2ef;overflow:hidden"><div style="position:absolute;bottom:0;left:0;right:0;height:${pctS}%;background:linear-gradient(${tc}88,${tc});transition:height .6s"></div></div><div style="width:48px;height:48px;border-radius:50%;background:${tc};margin-top:-6px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px">${pctS}%</div></div>`;
-  return `<div class="hero">${perf.foto?`<img class="hero-face" src="${esc(perf.foto)}" alt="">`:''}<div class="hero-d">${esc(hoyTxt)}</div><div class="hero-h">${saludo}${perf.nombre?", "+esc(perf.nombre):""}</div><div class="hero-t">Así vas esta semana</div><div class="hero-n">${pctS}%</div><div class="hero-s">${semDone} de ${semAll.length} hechas</div><div class="thermo"><div class="tt"><div style="width:${pctS}%"></div></div><div class="tb">${semDone}/${semAll.length}</div></div><div class="hero-f">${esc(frase)}</div></div>
+  return `<div class="hero">${perf.foto?`<img class="hero-face" src="${esc(perf.foto)}" alt="">`:''}<div class="hero-d">${esc(hoyTxt)}</div><div class="hero-h">${saludo}${perf.nombre?", "+esc(perf.nombre):""}</div><div class="hero-t">Así vas esta semana</div><div class="hero-n">${pctS}%</div><div class="hero-s">${semDone} de ${semAll.length} hechas</div><div class="thermo"><div class="tt"><div class="${(()=>{const g=!window.__tg;window.__tg=true;return g?'grow':''})()}" style="width:${pctS}%"></div></div><div class="tb">${semDone}/${semAll.length}</div></div><div class="hero-f">${esc(frase)}</div></div>
     <div class="stats">${rstat('pendT',pendT,'tareas de esta semana sin hacer','#2383e2')}${rstat('pendV',pendV,'vídeos en proceso','#d44c8f')}${rstat('subMes',subMes,'vídeos subidos este mes','#0f7b6c')}</div>
     <div class="grp">📌 Próximas fechas límite</div>
     ${proximas.map(cardDate).join('')||'<p class="mut">No tienes fechas límite pendientes.</p>'}${settingsHtml()}`;
