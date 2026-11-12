@@ -755,7 +755,7 @@ function startVoice(){
   const up=()=>{btn.style.background='#d44c8f';try{rec.stop()}catch(err){}};
   btn.addEventListener('pointerdown',down);btn.addEventListener('pointerup',up);btn.addEventListener('pointercancel',up);
 }
-document.addEventListener('click',e=>{const b=e.target.closest('[data-vcancel],[data-vsave-manual]');if(!b)return;if('vcancel' in b.dataset){if(window.VS)window.VS.on=false;if(voiceRec){try{voiceRec.abort()}catch(err){}}closeVoice();return}const t=(document.getElementById('vman')||{}).value||'';closeVoice();if(t.trim())saveIdea(t.trim())});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-vcancel],[data-vsave-manual]');if(!b)return;if('vcancel' in b.dataset){if(voiceRec){voiceRec.onend=null;try{voiceRec.abort()}catch(err){}}closeVoice();return}const t=(document.getElementById('vman')||{}).value||'';closeVoice();if(t.trim())saveIdea(t.trim())});
 let wiz=null;
 const WQ={g:'¿De qué grupo es?',t:'¿Cómo se llama la tarea?',p:'¿Qué prioridad tiene?',a:'¿De qué asignatura es?',ty:'¿Qué tipo es?',pr:'¿En qué progreso está?',e:'¿Qué estado tiene?',f:'¿Es reel o carrusel?',tv:'¿Qué tipo de vídeo es?',hs:'¿Qué hashtags quieres?',du:'¿Cuánto dura?',fr:'¿En qué franja?',d:'¿Qué descripción tiene?',n:'¿Alguna nota?',fl:'¿Cuál es la fecha límite?',di:'¿Qué día se hace?',pu:'¿Cuándo se publica?'};
 function wizKeys(){return visibleKeys(wiz.o).filter(k=>k!=='h'&&k!=='cu')}
@@ -915,17 +915,12 @@ async function startVoice(){
     down=e=>{e.preventDefault();VS.finalT='';VS.live='';VS.on=true;btn.style.background='#b03a78';hint.textContent='Te escucho… suelta para guardar';dict.start().catch(()=>{VS.on=false;manual()})};
     up=()=>{btn.style.background='#d44c8f';dict.stop().catch(()=>{})};
   } else {
-    window.VS_manual=manual;
-    if(!window.VSR){
-      const r=new SR();r.lang='es-ES';r.continuous=true;r.interimResults=true;
-      r.onresult=ev=>{let it='';for(let i=ev.resultIndex;i<ev.results.length;i++){const x=ev.results[i];if(x.isFinal)VS.finalT+=x[0].transcript+' ';else it+=x[0].transcript}VS.live=it;if(window.VS_show)window.VS_show()};
-      r.onend=()=>{if(window.VS_finish)window.VS_finish()};
-      r.onerror=e=>{const c=e&&e.error;const h=document.getElementById('vhint');if(c==='not-allowed'||c==='service-not-allowed'){VS.on=false;if(window.VS_manual)window.VS_manual();return}if(h)h.textContent=c==='network'?'Sin conexión para el dictado, escribe la idea':c==='aborted'?'Mantén pulsado un poco más':'No te he oído, prueba otra vez'};
-      window.VSR=r;
-    }
-    const rec=window.VSR;voiceRec=rec;
-    const go=retry=>{try{rec.start()}catch(err){if(retry){setTimeout(()=>go(false),400)}else{VS.on=false;const h=document.getElementById('vhint');if(h)h.textContent='No se pudo activar el micro. Cierra y vuelve a intentarlo'}}};
-    down=e=>{e.preventDefault();VS.finalT='';VS.live='';VS.on=true;btn.style.background='#b03a78';hint.textContent='Te escucho… suelta para guardar';go(true)};
+    const rec=new SR();rec.lang='es-ES';rec.continuous=true;rec.interimResults=true;
+    voiceRec=rec;
+    rec.onresult=ev=>{let it='';for(let i=ev.resultIndex;i<ev.results.length;i++){const r=ev.results[i];if(r.isFinal)VS.finalT+=r[0].transcript+' ';else it+=r[0].transcript}VS.live=it;show()};
+    rec.onend=finish;
+    rec.onerror=e=>{const c=e&&e.error;if(c==='not-allowed'||c==='service-not-allowed'){VS.on=false;manual();return}hint.textContent=c==='network'?'Sin conexión para el dictado, escribe la idea':c==='aborted'?'Mantén pulsado un poco más':'No te he oído, prueba otra vez'};
+    down=e=>{e.preventDefault();VS.finalT='';VS.live='';VS.on=true;btn.style.background='#b03a78';hint.textContent='Te escucho… suelta para guardar';try{rec.start()}catch(err){}};
     up=()=>{btn.style.background='#d44c8f';try{rec.stop()}catch(err){}};
   }
   btn.addEventListener('pointerdown',down);
