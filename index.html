@@ -1192,7 +1192,7 @@ function swReset(el){if(!el)return;el.style.transform='';el.style.background='';
 document.addEventListener('pointerdown',e=>{
   if(e.pointerType!=='touch')return;
   const el=e.target.closest('.item');
-  if(!el||el.closest('.kanban')||e.target.closest('input,select,textarea,button'))return;
+  if(!el||el.closest('.kanban')||e.target.closest('select,textarea,button,input:not([type=checkbox])'))return;
   const cb=el.querySelector('input[type=checkbox][data-h]');if(!cb)return;
   swDrag={el,cb,x:e.clientX,y:e.clientY,on:false,dx:0};
 },{passive:true});
