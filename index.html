@@ -405,6 +405,9 @@ body.dark .wdlg .sumrow{background:#2a2a2a}
   .stats .stat:last-child:nth-child(odd){grid-column:1/-1}
 }
 
+/* PC: el botón Nueva tarea va dentro de la barra lateral, debajo del menú */
+@media(min-width:701px){.side .fab{position:static;display:flex;align-items:center;justify-content:center;width:100%;margin:14px 0 0;padding:12px 16px;box-shadow:none}}
+
 /* PC: iconos y textos del menú lateral alineados en la misma línea */
 @media(min-width:701px){.side .nav{display:flex;align-items:center;gap:10px}.side .nav .ico{display:flex;align-items:center;justify-content:center;flex-shrink:0}}
 
@@ -415,7 +418,7 @@ body.dark .wdlg .sumrow{background:#2a2a2a}
 <body>
 <div class="app">
   <aside class="side">
-    <h2>📅 Planificador</h2>
+    <h2>Planificador</h2>
     <div class="sync" id="sync"></div>
 
     <div class="navind" id="navind"></div>
