@@ -485,7 +485,7 @@ function statsTodo(){
 }
 function recienteHtml(){
   const rows=act().filter(o=>o.pr!=='Idea'&&filtGrupo(o)).reverse();
-  return `<h1>✅ To Do</h1><div class="sub">${rows.length} tareas · las últimas que añadiste, arriba</div>${todoSeg()}`+statsTodo()+(rows.map(o=>card(o)).join('')||'<p class="mut">No hay tareas con este filtro.</p>');
+  return `<h1>✅ To Do</h1><div class="sub">${rows.length} tareas · las últimas arriba</div>${todoSeg()}`+statsTodo()+(rows.map(o=>card(o)).join('')||'<p class="mut">No hay tareas con este filtro.</p>');
 }
 function todoHtml(){
   if(todoOrden==='reciente')return recienteHtml();
@@ -493,7 +493,7 @@ function todoHtml(){
   const grupos=[...Object.keys(GC),''];
   const stat=(n,l,c)=>`<div class="stat"><b style="color:${c}">${n}</b><span>${l}</span></div>`;
   const statsHtml=statsTodo();
-  return `<h1>✅ To Do</h1><div class="sub">Pendientes por apartado · pulsa “＋ añadir” para crear en ese grupo</div>${todoSeg()}`+
+  return `<h1>✅ To Do</h1><div class="sub">Pendientes por grupo · ＋ añadir</div>${todoSeg()}`+
     statsHtml+(rows.length?'':'<p class="mut">No hay tareas con este filtro.</p>')+grupos.map(g=>{
       const list=rows.filter(o=>(o.g||'')===g).sort(byFl);
       if(!list.length)return '';
