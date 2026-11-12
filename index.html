@@ -600,7 +600,7 @@ function agendaHtml(){
   return `<div class="grp" style="margin-top:18px;text-transform:capitalize">${d.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'})} <button class="btn" style="margin-left:auto" data-newday="${selDay}">＋ tarea</button></div>`+GCAL.filter(e=>e.d===selDay).map(e=>`<div class="gev" style="margin-top:8px">📅 ${esc(e.t)} <span>${esc(e.h)}</span></div>`).join('')+(list.map(o=>card(o)).join('')||'<p class="mut">Nada este día.</p>');
 }
 function redesHtml(){
-  const redes=act().filter(o=>o.g==='Redes');
+  const redes=S.filter(o=>o.g==='Redes'&&(!o.h||o.pr==='Subido'));
   const tabs=`<div style="display:flex;gap:6px;margin:4px 0 16px"><button class="btn ${redesView==='tablero'?'on':''}" data-rv="tablero">▦ Tablero</button><button class="btn ${redesView==='tabla'?'on':''}" data-rv="tabla">☰ Tabla</button><button class="btn ${showIdeas?'on':''}" data-toggle-ideas>💡 ${showIdeas?'Ocultar ideas':'Mostrar ideas'}</button></div>`;
   let body;
   if(redesView==='tabla'){
@@ -608,7 +608,7 @@ function redesHtml(){
       (L.pr.filter(p=>showIdeas||p!=='Idea').map(p=>{const rs=redes.filter(o=>o.pr===p);if(!rs.length)return '';return `<div class="grp"><span class="dot" style="background:${PRC[p]}"></span>${PRI[p]} ${p} <span class="mut">${rs.length}</span></div>`+rs.map(o=>`<div class="trow" style="border-left:4px solid ${PRC[p]}"><a class="tt" data-open="${o.id}">${esc(o.t||'Sin título')}</a><div>${selInl(o,'pr',L.pr)}</div><div>${o.f?`<span class="pill">${esc(o.f)}</span>`:'<span class="mut">—</span>'}</div><div class="mut">${esc(fmtD(o.pu))||'—'}</div></div>`).join('')}).join('')||'<p class="mut">Sin vídeos.</p>');
   } else {
     body=`<div class="kanban">${L.pr.map(col=>{
-      const items=redes.filter(o=>o.pr===col && (col!=='Subido'||!o.pu||o.pu.slice(0,10)>=hace30));
+      const items=redes.filter(o=>o.pr===col && (col!=='Subido'||(o.pu&&o.pu.slice(0,10)>=hace30)));
       if(col==='Idea'&&!showIdeas)return '';
       const oculta=false;
       const btn='';
