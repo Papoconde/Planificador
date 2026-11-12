@@ -450,6 +450,7 @@ function semanaHtml(){
 
 let todoOrden='grupo';
 let todoGrp='__all';
+const todoSeg=()=>`<div style="display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 16px"><button class="btn ${todoOrden==='grupo'?'on':''}" data-tord="grupo">Por grupo</button><button class="btn ${todoOrden==='reciente'?'on':''}" data-tord="reciente">Más recientes arriba</button></div>`;
 const filtGrupo=o=>todoGrp==='__all'||(o.g||'')===todoGrp;
 function statsTodo(){
   const all=act().filter(o=>o.pr!=='Idea');
