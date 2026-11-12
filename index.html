@@ -667,7 +667,9 @@ function resumenHtml(){
   const SALUDOS={d:['Buenos días','Buen día','Arriba ese ánimo'],t:['Buenas tardes','Buena tarde','Qué tal la tarde'],n:['Buenas noches','Buena noche','Cierra el día bien']};
   const franja=(h>=6&&h<17)?'d':(h>=17&&h<20)?'t':'n';
   const saludo=SALUDOS[franja][(hoyD.getDate()+h)%SALUDOS[franja].length];
-  const frase=!semAll.length?'Esta semana no tienes nada programado. Buen momento para planificar algo nuevo.':pctS===0?'Todavía no has marcado nada esta semana. Empieza por la más fácil.':pctS<50?'Vas arrancando. Un par más y la semana cambia de color.':pctS<100?'Vas muy bien, te queda poco para cerrar la semana.':'¡Semana completa! Buen trabajo.';
+  const FRASES={vacia:['Semana libre. Buen momento para pensar en algo que te apetezca.','Nada apuntado esta semana. Puedes usarla para ir un poco por delante.','Semana sin nada. Aprovéchala para respirar o para adelantar algo.'],cero:['Todavía no has empezado. Coge la tarea más fácil y ya verás cómo se mueve todo.','Empezar es lo que más cuesta. Con una sola tarea hecha la semana cambia.','Aún no has marcado nada. Una tarea y ya vas.'],poco:['Vas arrancando. Un par más y la semana empieza a tener otro color.','Buen ritmo para empezar. Sigue así, que se nota.','Ya has dado el primer paso. Ahora a por el siguiente.'],mucho:['Vas muy bien, te queda poco para cerrar la semana.','Ya casi está. Aguanta un poco más y la semana queda cerrada.','Te falta muy poco. Lo estás haciendo genial.'],hecha:['¡Semana completa! Buen trabajo.','Semana cerrada. Ahora descansa un rato, te lo has ganado.','Todo hecho. Disfruta del resto del día sin pendientes.']};
+  const fGrupo=!semAll.length?'vacia':pctS===0?'cero':pctS<50?'poco':pctS<100?'mucho':'hecha';
+  const frase=FRASES[fGrupo][(hoyD.getDate()+h)%FRASES[fGrupo].length];
   const stat=(n,l,c)=>`<div class="stat"><b style="color:${c}">${n}</b><span>${l}</span></div>`;
   const semPend=act().filter(inWeek).length;
   const rstat=(k,n,l,c)=>`<div class="stat" data-rf="${k}" style="cursor:pointer"><b style="color:${c}">${n}</b><span>${l}</span></div>`;
