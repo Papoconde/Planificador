@@ -1351,7 +1351,8 @@ document.addEventListener('keydown',e=>{if(wiz&&e.key==='Enter'&&e.target.tagNam
 let wizTap=false;
 document.addEventListener('pointerdown',e=>{wizTap=!(e.target.matches&&e.target.matches('#wiz input'))},true);
 document.addEventListener('focusin',e=>{if(e.target.matches&&e.target.matches('#wiz input'))wizTap=false},true);
-document.addEventListener('change',e=>{if(!wiz||wizTap||e.target.tagName!=='INPUT'||e.target.type!=='text'||!('wkey' in e.target.dataset))return;wizAvanza(e.target)});
+// textos y descripciones: al cerrar el teclado con ✓ (change) se pasa al siguiente paso; en la descripción no hay Enter para avanzar
+document.addEventListener('change',e=>{if(!wiz||wizTap||!('wkey' in e.target.dataset))return;const t=e.target;if(!((t.tagName==='INPUT'&&t.type==='text')||t.tagName==='TEXTAREA'))return;wizAvanza(t)});
 // fecha: iOS dispara "change" mientras se gira la rueda, así que avanzamos solo cuando el selector se cierra (Listo) y el campo pierde el foco
 document.addEventListener('focusout',e=>{const t=e.target;if(!wiz||wizBusy||wizTap||t.tagName!=='INPUT'||t.type!=='date'||!('wkey' in t.dataset)||!t.value)return;wizAvanza(t)},true);
 // franja horaria (inicio → fin): el fin siempre es posterior al inicio y, al cerrar el fin (Listo), avanza
