@@ -1050,7 +1050,7 @@ function openCtx(id,x,y){
   document.body.insertAdjacentHTML('beforeend',`<div class="ctx" id="ctx" data-cxid="${id}" style="left:${left}px;top:${top}px"><button data-cxa="open">📂 Abrir</button>${o.pr==='Idea'&&!o.h?'':`<button data-cxa="done">${o.h?'↩️ Desmarcar':'✅ Marcar como hecha'}</button>`}${prs}<button data-cxa="del" class="cxdel">🗑️ Borrar</button></div>`);
   {const _e=document.getElementById('ctx');if(_e)_e.innerHTML=noEmo(_e.innerHTML);}
 }
-document.addEventListener('contextmenu',e=>{const id=taskIdFrom(e.target);if(!id||e.target.closest('.kanban'))return;e.preventDefault();openCtx(id,e.clientX,e.clientY)});
+document.addEventListener('contextmenu',e=>{const id=taskIdFrom(e.target);if(!id||e.target.closest('.kanban'))return;if((wdT&&wdT.lift)||(window.matchMedia('(pointer:coarse)').matches&&e.target.closest('[data-wdrag]')))return;e.preventDefault();openCtx(id,e.clientX,e.clientY)});
 let ctxTimer=null,longFired=false;
 document.addEventListener('touchstart',e=>{const id=taskIdFrom(e.target);if(!id||e.target.closest('.kanban'))return;longFired=false;const t=e.touches[0];clearTimeout(ctxTimer);ctxTimer=setTimeout(()=>{longFired=true;if(navigator.vibrate)navigator.vibrate(15);openCtx(id,t.clientX,t.clientY)},1000)},{passive:true});
 document.addEventListener('touchmove',()=>{clearTimeout(ctxTimer)},{passive:true});
