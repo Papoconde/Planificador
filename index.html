@@ -905,7 +905,7 @@ document.addEventListener('pointermove',e=>{
   if(d)d.classList.add('hot');wdT.day=d?d.dataset.day:null;
 },{passive:true});
 function wdEnd(e){
-  if(!wdT)return;const w=wdT;wdT=null;clearTimeout(w.t);
+  if(!wdT)return;const w=wdT;wdT=null;clearTimeout(w.t);if(w.lift)window.__swBlock=Date.now();
   w.el.classList.remove('lift');w.el.style.opacity='';
   document.querySelectorAll('.wkday.hot').forEach(x=>x.classList.remove('hot'));
   if(!w.on)return;
