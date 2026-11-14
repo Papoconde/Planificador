@@ -1311,7 +1311,8 @@ function renderWiz(){
       </div>
     </div></div></div>`);
   {const _e=document.getElementById('wiz');if(_e)_e.innerHTML=noEmo(_e.innerHTML);}
-  const inp=document.querySelector('#wiz [data-wkey]');if(inp&&p.type!=='sel'&&!wizNoFoco)inp.focus();wizNoFoco=false;
+  // igual que con la fecha: el campo se enfoca al llegar al paso (y así se abre su selector); la franja enfoca la hora de inicio
+  const inp=document.querySelector('#wiz [data-wkey]')||document.querySelector('#wiz [data-frp="0"]');if(inp&&(p.type!=='sel'||k==='fr')&&!wizNoFoco)inp.focus();wizNoFoco=false;
 }
 document.addEventListener('click',e=>{
   const b=e.target.closest('[data-wopt],[data-wnext],[data-wback],[data-wskip],[data-wcancel],[data-wcreate],[data-wstart],[data-voice]');
