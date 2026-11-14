@@ -454,7 +454,9 @@ body.dark .wdlg .sumrow{background:#2a2a2a}
 body.wdl .item[data-wdrag]:not(.lift){opacity:.35;transition:opacity .15s}
 .wdghost{position:fixed;left:0;top:0;z-index:9999;pointer-events:none}
 .wdghost .wdin{transform:scale(.62);transform-origin:0 0}
-.wdghost .wdin>.item{outline:2px solid #8fb8ff;outline-offset:2px;border-radius:14px;animation:wdShk .16s ease-in-out infinite alternate;margin:0}
+.wdghost .wdcl{outline:2px solid #8fb8ff;outline-offset:2px;border-radius:14px;animation:wdShk .16s ease-in-out infinite alternate;transform-origin:50% 50%;box-shadow:0 10px 24px rgba(0,0,0,.28)!important}
+.wdghost .wdcl *{animation:none!important}
+[data-drag]{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 .wdghost .wdplus{position:absolute;right:-8px;top:-8px;width:22px;height:22px;border-radius:50%;background:#0f7b6c;color:#fff;font:700 16px/22px system-ui,sans-serif;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.3)}
 @keyframes wdShk{from{transform:rotate(-1.4deg)}to{transform:rotate(1.4deg)}}
 .item,.trow.wk{user-select:none;-webkit-user-select:none}
@@ -778,7 +780,7 @@ function almacenamientoKB(){
   try{for(let k=0;k<localStorage.length;k++){const key=localStorage.key(k);bytes+=(key.length+(localStorage.getItem(key)||'').length)*2}}catch(e){}
   return bytes/1024;
 }
-const APP_VER='v-ghost-3';
+const APP_VER='v-ghost-4';
 function ajustesHtml(){
   const perf=perfilCfg();
   const kb=almacenamientoKB(), cuota=5*1024, libre=Math.max(0,cuota-kb), pctU=Math.max(0,Math.min(100,Math.round(kb/cuota*100)));
@@ -915,8 +917,19 @@ function wdGhostOn(el,x,y){
   g._W=W;g._H=H;g._ox=r.left;g._oy=r.top;g._land=false;
   g.style.width=(W*.62)+'px';g.style.height=(H*.62)+'px';
   const inner=document.createElement('div');inner.className='wdin';inner.style.width=W+'px';
-  const c=el.cloneNode(true);c.classList.remove('lift');c.removeAttribute('data-wdrag');c.removeAttribute('data-drag');c.style.width=W+'px';c.style.opacity='1';
-  inner.appendChild(c);g.appendChild(inner);
+  /* replica los contenedores (columna, día, tablero) como cáscaras vacías sin fondo
+     para que la tarjeta copiada conserve los mismos estilos que en su sitio */
+  let cur=inner;const chain=[];let anc=el.parentElement;
+  while(anc&&anc!==document.body&&chain.length<3){chain.unshift(anc);anc=anc.parentElement}
+  chain.forEach(a=>{
+    const s=a.cloneNode(false);s.removeAttribute('id');
+    [...s.attributes].forEach(at=>{if(at.name.startsWith('data-')||at.name==='draggable')s.removeAttribute(at.name)});
+    s.classList.remove('hot','lift');
+    s.style.cssText+=`;background:none!important;border:0!important;box-shadow:none!important;outline:none!important;padding:0!important;margin:0!important;min-height:0!important;height:auto!important;overflow:visible!important;max-width:none!important;width:${a.offsetWidth}px!important`;
+    cur.appendChild(s);cur=s;
+  });
+  const c=el.cloneNode(true);c.classList.remove('lift');c.removeAttribute('data-wdrag');c.removeAttribute('data-drag');c.removeAttribute('draggable');c.classList.add('wdcl');c.style.width=W+'px';c.style.opacity='1';c.style.margin='0';
+  cur.appendChild(c);g.appendChild(inner);
   const p=document.createElement('span');p.className='wdplus';p.textContent='+';g.appendChild(p);
   g.style.transform=`translate(${r.left}px,${r.top}px)`;
   inner.style.transform='scale(1)';
@@ -943,12 +956,13 @@ function wdGhostLand(target,cb){
     g.style.opacity='0';
     setTimeout(()=>{g.remove();if(cb)cb()},200);
   }else{
-    /* sin destino: vuelve a su pastilla de origen, recupera su tamaño y se asienta (sin difuminar) */
-    g.style.transition='transform .35s cubic-bezier(.2,.8,.2,1)';
-    inner.style.transition='transform .35s cubic-bezier(.2,.8,.2,1)';
+    /* sin destino: vuelve a su pastilla de origen, recupera su tamaño y se asienta difuminándose */
+    g.style.transition='transform .4s cubic-bezier(.2,.8,.2,1),opacity .4s ease-out';
+    inner.style.transition='transform .4s cubic-bezier(.2,.8,.2,1)';
     inner.style.transform='scale(1)';
     g.style.transform=`translate(${g._ox}px,${g._oy}px)`;
-    setTimeout(()=>{g.remove();if(cb)cb()},360);
+    g.style.opacity='0';
+    setTimeout(()=>{g.remove();if(cb)cb()},420);
   }
 }
 document.addEventListener('pointermove',e=>{
@@ -970,7 +984,9 @@ function wdEnd(e){
   const o=S.find(x=>x.id===w.id);
   wdGhostLand(d,()=>{if(o&&day&&o.di!==day){o.di=day;persist();render()}});
 }
-document.addEventListener('touchmove',e=>{if(wdT&&wdT.lift&&e.cancelable)e.preventDefault()},{passive:false});
+document.addEventListener('touchmove',e=>{if(e.cancelable&&((wdT&&wdT.lift)||(typeof tdrag!=='undefined'&&tdrag&&tdrag.el.classList.contains('lift'))))e.preventDefault()},{passive:false});
+/* al mantener pulsada una tarjeta de Contenido Redes, que no arranque el arrastre nativo del navegador */
+document.addEventListener('dragstart',e=>{if(typeof tdrag!=='undefined'&&tdrag&&e.target.closest&&e.target.closest('[data-drag]')){e.preventDefault()}});
 document.addEventListener('contextmenu',e=>{if((wdT&&wdT.lift)||(e.target.closest&&e.target.closest('[data-wdrag]')))e.preventDefault()});
 document.addEventListener('pointerup',wdEnd);
 document.addEventListener('pointercancel',()=>{wdGhostOff();if(wdT){clearTimeout(wdT.t);wdT.el.classList.remove('lift');wdT.el.style.opacity='';document.body.classList.remove('wdl');wdT=null}document.querySelectorAll('.wkday.hot').forEach(x=>x.classList.remove('hot'))});
