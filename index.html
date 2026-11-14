@@ -1312,7 +1312,9 @@ function renderWiz(){
     </div></div></div>`);
   {const _e=document.getElementById('wiz');if(_e)_e.innerHTML=noEmo(_e.innerHTML);}
   // igual que con la fecha: el campo se enfoca al llegar al paso (y así se abre su selector); la franja enfoca la hora de inicio
-  const inp=document.querySelector('#wiz [data-wkey]')||document.querySelector('#wiz [data-frp="0"]');if(inp&&(p.type!=='sel'||k==='fr')&&!wizNoFoco){inp.focus();if((inp.type==='date'||inp.type==='time')&&typeof inp.showPicker==='function'){try{inp.showPicker()}catch(err){}}}wizNoFoco=false;
+  const inp=document.querySelector('#wiz [data-wkey]')||document.querySelector('#wiz [data-frp="0"]');const atras=wizAtras, noF=wizNoFoco; wizAtras=false; wizNoFoco=false;
+  // fecha y hora: se abren al avanzar (también automáticamente), nunca al volver atrás; el resto de campos solo al avanzar con botón
+  if(inp&&(p.type!=='sel'||k==='fr')&&!atras&&(!noF||inp.type==='date'||inp.type==='time')){inp.focus();if((inp.type==='date'||inp.type==='time')&&typeof inp.showPicker==='function'){try{inp.showPicker()}catch(err){}}}
 }
 document.addEventListener('click',e=>{
   const b=e.target.closest('[data-wopt],[data-wnext],[data-wback],[data-wskip],[data-wcancel],[data-wcreate],[data-wstart],[data-voice]');
@@ -1324,12 +1326,12 @@ document.addEventListener('click',e=>{
   if('wopt' in d){wiz.o[d.wopt]=d.wv;wiz.i++;return renderWiz()}
   if('wcreate' in d)return saveWiz();
   if('wcancel' in d)return closeWiz();
-  if('wback' in d){wiz.i=Math.max(0,wiz.i-1);wizNoFoco=true;return renderWiz()}
+  if('wback' in d){wiz.i=Math.max(0,wiz.i-1);wizAtras=true;return renderWiz()}
   if('wnext' in d){const k=wizKeys()[wiz.i];const o=wiz.o;if(k==='g'&&!o.g)return;if(k==='t'&&!(o.t||'').trim())return;wiz.i++;return renderWiz()}
 });
 document.addEventListener('input',e=>{const t=e.target;if(wiz&&'wkey' in t.dataset)wiz.o[t.dataset.wkey]=t.value});
 /* Enter en un campo del asistente: cierra el teclado y pasa al siguiente paso sin volver a abrirlo */
-let wizNoFoco=false;
+let wizNoFoco=false, wizAtras=false;
 // en iPhone el selector de fecha/hora del asistente se abre al tocar el campo: lo abrimos explícitamente con ese toque
 document.addEventListener('click',e=>{const el=e.target.closest&&e.target.closest('#wiz input[type=date],#wiz input[type=time]');if(!el||typeof el.showPicker!=='function')return;try{el.showPicker()}catch(err){}});
 let wizBusy=false;
