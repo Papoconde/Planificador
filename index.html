@@ -450,8 +450,13 @@ body.dark .wdlg .sumrow{background:#2a2a2a}
 .wkday.hot{outline:2px solid #8fb8ff}
 @keyframes wdJiggle{from{transform:rotate(-0.9deg)}to{transform:rotate(0.9deg)}}
 .item[data-wdrag],.item[data-wdrag] .tt{-webkit-touch-callout:none!important;-webkit-user-select:none;user-select:none}
-.item.lift[data-wdrag]{outline:2px solid #8fb8ff;outline-offset:3px;border-radius:14px;position:relative;z-index:2;animation:wdJiggle .14s ease-in-out infinite alternate;transform-origin:50% 50%}
+.item.lift[data-wdrag]{opacity:.3!important;transform:none!important;box-shadow:none!important;transition:opacity .15s}
 body.wdl .item[data-wdrag]:not(.lift){opacity:.35;transition:opacity .15s}
+.wdghost{position:fixed;left:0;top:0;z-index:9999;pointer-events:none}
+.wdghost .wdin{transform:scale(.62);transform-origin:0 0}
+.wdghost .wdin>.item{outline:2px solid #8fb8ff;outline-offset:2px;border-radius:14px;animation:wdShk .16s ease-in-out infinite alternate;margin:0}
+.wdghost .wdplus{position:absolute;right:-8px;top:-8px;width:22px;height:22px;border-radius:50%;background:#0f7b6c;color:#fff;font:700 16px/22px system-ui,sans-serif;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.3)}
+@keyframes wdShk{from{transform:rotate(-1.4deg)}to{transform:rotate(1.4deg)}}
 .item,.trow.wk{user-select:none;-webkit-user-select:none}
 .swbg{position:absolute;left:0;top:0;bottom:0;width:124px;background:#0f7b6c;color:#fff;border-radius:999px;display:flex;align-items:center;justify-content:center;gap:6px;overflow:hidden;white-space:nowrap;font-weight:600;font-size:14px;pointer-events:none;z-index:0}
 .swbg>span{flex-shrink:0}
@@ -773,7 +778,7 @@ function almacenamientoKB(){
   try{for(let k=0;k<localStorage.length;k++){const key=localStorage.key(k);bytes+=(key.length+(localStorage.getItem(key)||'').length)*2}}catch(e){}
   return bytes/1024;
 }
-const APP_VER='v-lift-4';
+const APP_VER='v-ghost-1';
 function ajustesHtml(){
   const perf=perfilCfg();
   const kb=almacenamientoKB(), cuota=5*1024, libre=Math.max(0,cuota-kb), pctU=Math.max(0,Math.min(100,Math.round(kb/cuota*100)));
@@ -898,19 +903,32 @@ document.addEventListener('pointerdown',e=>{
   if(e.pointerType==='mouse'&&e.button!==0)return;
   const id=el.dataset.wdrag;
   wdT={id,el,x:e.clientX,y:e.clientY,on:false,lift:false,day:null,t:null};
-  wdT.t=setTimeout(()=>{if(wdT&&wdT.id===id){wdT.lift=true;el.classList.add('lift');document.body.classList.add('wdl')}},200);
+  wdT.t=setTimeout(()=>{if(wdT&&wdT.id===id){wdT.lift=true;el.classList.add('lift');document.body.classList.add('wdl');wdGhostOn(el,wdT.x,wdT.y)}},200);
 },{passive:true});
+function wdGhostOn(el,x,y){
+  wdGhostOff();
+  const W=el.offsetWidth,H=el.offsetHeight;
+  const g=document.createElement('div');g.className='wdghost';g.id='wdGhost';
+  g._W=W;g._H=H;g.style.width=(W*.62)+'px';g.style.height=(H*.62)+'px';
+  const inner=document.createElement('div');inner.className='wdin';inner.style.width=W+'px';
+  const c=el.cloneNode(true);c.classList.remove('lift');c.removeAttribute('data-wdrag');c.style.width=W+'px';c.style.opacity='1';
+  inner.appendChild(c);g.appendChild(inner);
+  const p=document.createElement('span');p.className='wdplus';p.textContent='+';g.appendChild(p);
+  document.body.appendChild(g);wdGhostMove(x,y);
+}
+function wdGhostMove(x,y){const g=document.getElementById('wdGhost');if(g)g.style.transform=`translate(${x-g._W*.31}px,${y-g._H*.31}px)`}
+function wdGhostOff(){const g=document.getElementById('wdGhost');if(g)g.remove()}
 document.addEventListener('pointermove',e=>{
   if(!wdT)return;
   const dx=e.clientX-wdT.x,dy=e.clientY-wdT.y;
   if(!wdT.lift){if(Math.hypot(dx,dy)>8){clearTimeout(wdT.t);wdT=null}return}
-  wdT.on=true;
+  wdT.on=true;wdGhostMove(e.clientX,e.clientY);
   const d=document.elementFromPoint(e.clientX,e.clientY)?.closest('.wkday[data-day]');
   document.querySelectorAll('.wkday.hot').forEach(x=>{if(x!==d)x.classList.remove('hot')});
   if(d)d.classList.add('hot');wdT.day=d?d.dataset.day:null;
 },{passive:true});
 function wdEnd(e){
-  if(!wdT)return;const w=wdT;wdT=null;clearTimeout(w.t);if(w.lift)window.__swBlock=Date.now();
+  if(!wdT)return;const w=wdT;wdT=null;clearTimeout(w.t);wdGhostOff();if(w.lift)window.__swBlock=Date.now();
   w.el.classList.remove('lift');w.el.style.opacity='';document.body.classList.remove('wdl');
   document.querySelectorAll('.wkday.hot').forEach(x=>x.classList.remove('hot'));
   if(!w.on)return;
@@ -922,7 +940,7 @@ function wdEnd(e){
 document.addEventListener('touchmove',e=>{if(wdT&&wdT.lift&&e.cancelable)e.preventDefault()},{passive:false});
 document.addEventListener('contextmenu',e=>{if((wdT&&wdT.lift)||(e.target.closest&&e.target.closest('[data-wdrag]')))e.preventDefault()});
 document.addEventListener('pointerup',wdEnd);
-document.addEventListener('pointercancel',()=>{if(wdT){clearTimeout(wdT.t);wdT.el.classList.remove('lift');wdT.el.style.opacity='';document.body.classList.remove('wdl');wdT=null}document.querySelectorAll('.wkday.hot').forEach(x=>x.classList.remove('hot'))});
+document.addEventListener('pointercancel',()=>{wdGhostOff();if(wdT){clearTimeout(wdT.t);wdT.el.classList.remove('lift');wdT.el.style.opacity='';document.body.classList.remove('wdl');wdT=null}document.querySelectorAll('.wkday.hot').forEach(x=>x.classList.remove('hot'))});
 function confirmBorrar(t){
   const n=(t||'esta tarea').trim();
   return confirm(`Vas a borrar «${n}».\n\nEsto ya no se puede recuperar: se quita de tu planificador y de la nube.\n\n¿Seguro que quieres borrarla?`);
