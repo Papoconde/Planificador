@@ -1324,7 +1324,7 @@ document.addEventListener('click',e=>{
   if('wopt' in d){wiz.o[d.wopt]=d.wv;wiz.i++;return renderWiz()}
   if('wcreate' in d)return saveWiz();
   if('wcancel' in d)return closeWiz();
-  if('wback' in d){wiz.i=Math.max(0,wiz.i-1);return renderWiz()}
+  if('wback' in d){wiz.i=Math.max(0,wiz.i-1);wizNoFoco=true;return renderWiz()}
   if('wnext' in d){const k=wizKeys()[wiz.i];const o=wiz.o;if(k==='g'&&!o.g)return;if(k==='t'&&!(o.t||'').trim())return;wiz.i++;return renderWiz()}
 });
 document.addEventListener('input',e=>{const t=e.target;if(wiz&&'wkey' in t.dataset)wiz.o[t.dataset.wkey]=t.value});
