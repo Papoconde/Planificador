@@ -1335,11 +1335,18 @@ document.addEventListener('keydown',e=>{if(wiz&&e.key==='Enter'&&e.target.tagNam
 // iOS: al pulsar Listo/✓ del teclado el campo pierde el foco y dispara "change" (sin keydown Enter).
 // Solo avanzamos si el foco se va sin tocar la pantalla; si se toca un botón del asistente, lo gestiona el click.
 let wizTap=false;
-document.addEventListener('pointerdown',e=>{wizTap=!(e.target.matches&&e.target.matches('#wiz input[data-wkey]'))},true);
-document.addEventListener('focusin',e=>{if(e.target.matches&&e.target.matches('#wiz [data-wkey]'))wizTap=false},true);
+document.addEventListener('pointerdown',e=>{wizTap=!(e.target.matches&&e.target.matches('#wiz input'))},true);
+document.addEventListener('focusin',e=>{if(e.target.matches&&e.target.matches('#wiz input'))wizTap=false},true);
 document.addEventListener('change',e=>{if(!wiz||wizTap||e.target.tagName!=='INPUT'||e.target.type!=='text'||!('wkey' in e.target.dataset))return;wizAvanza(e.target)});
 // fecha: iOS dispara "change" mientras se gira la rueda, así que avanzamos solo cuando el selector se cierra (Listo) y el campo pierde el foco
 document.addEventListener('focusout',e=>{const t=e.target;if(!wiz||wizBusy||wizTap||t.tagName!=='INPUT'||t.type!=='date'||!('wkey' in t.dataset)||!t.value)return;wizAvanza(t)},true);
+// franja horaria (inicio → fin): el fin siempre es posterior al inicio y, al cerrar el fin (Listo), avanza
+document.addEventListener('focusout',e=>{const t=e.target;if(!wiz||wizBusy||wizTap||t.tagName!=='INPUT'||!('frp' in t.dataset)||!t.closest('#wiz'))return;const ins=t.closest('[data-frw]').querySelectorAll('input');const a=ins[0].value,b=ins[1];
+  if(t.dataset.frp==='0'){if(a)b.min=a;return}
+  if(!a||!b.value)return;
+  if(b.value<=a){const [h,m]=a.split(':').map(Number);const tot=Math.min(h*60+m+60,23*60+59);b.value=String(Math.floor(tot/60)).padStart(2,'0')+':'+String(tot%60).padStart(2,'0');frSync(b)}
+  wizAvanza(t)
+},true);
 // iOS envía el envío implícito del formulario con la tecla de la barra del teclado (Listo/siguiente/✓)
 document.addEventListener('submit',e=>{if(!wiz||!e.target.matches('[data-wform]'))return;e.preventDefault();wizAvanza(e.target.querySelector('[data-wkey]'))});
 let tdrag=null;
