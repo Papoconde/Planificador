@@ -158,7 +158,7 @@ h1{font-size:32px;margin:0 0 4px;letter-spacing:-.025em;font-weight:800}
 .dc .num{font-size:12px;color:#6b6a66;font-weight:700}
 .chip{display:block;font-size:11px;padding:2px 6px;border-radius:4px;margin-top:3px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;cursor:pointer}
 .page-wrap{max-width:740px;margin:0 auto}
-.ptitle{font-size:34px;font-weight:700;border:0;outline:none;width:100%;background:transparent;padding:6px 0;font-family:inherit;color:#37352f}
+.ptitle{font-size:34px;font-weight:700;border:0;outline:none;width:100%;background:transparent;padding:6px 0;font-family:inherit;color:#37352f;display:block;resize:none;overflow:hidden;line-height:1.2;overflow-wrap:anywhere}
 .prop{display:grid;grid-template-columns:160px 1fr;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid #efefed}
 .prop input,.prop select,.prop textarea{font:inherit;padding:6px 8px;border:1px solid #e6e5e1;border-radius:6px;width:100%;background:#fff;color:#37352f}
 .body{width:100%;min-height:340px;font:inherit;font-size:15px;line-height:1.65;border:0;outline:none;resize:vertical;padding:14px 0;background:transparent;color:#37352f}
@@ -488,8 +488,8 @@ body.dark .chip.gcal{background:#2a2a2a!important;color:#b5b3ad!important;border
 .dots{display:none}
 .calfil{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 12px}
 .hdrq{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.hdrq h1{margin:0;white-space:nowrap;flex:0 0 auto}
-.hdrq .qrow{flex:0 1 auto;min-width:0;justify-content:flex-end}
+.hdrq h1{margin:0;white-space:normal;flex:1 1 auto;min-width:0;overflow-wrap:anywhere;line-height:1.15}
+.hdrq .qrow{flex:0 0 auto;min-width:0;justify-content:flex-end}
 .hdrq .qsearch{flex:0 1 auto;min-width:0}
 .hdrq .qclr{padding:0 8px;font-size:12px}
 .qrow{display:flex;align-items:center;gap:8px;flex:0 0 auto;margin:0}
@@ -877,7 +877,7 @@ function almacenamientoKB(){
   try{for(let k=0;k<localStorage.length;k++){const key=localStorage.key(k);bytes+=(key.length+(localStorage.getItem(key)||'').length)*2}}catch(e){}
   return bytes/1024;
 }
-const APP_VER='v-wiz-12';
+const APP_VER='v-wiz-13';
 function ajustesHtml(){
   const perf=perfilCfg();
   const kb=almacenamientoKB(), cuota=5*1024, libre=Math.max(0,cuota-kb), pctU=Math.max(0,Math.min(100,Math.round(kb/cuota*100)));
@@ -953,7 +953,7 @@ function pageHtml(o){
   const props=visibleKeys(o).filter(k=>k!=='cu').map(k=>propRow(o,P[k])).join('');
   return `<div style="display:flex;gap:8px;margin-bottom:14px"><button class="btn" data-back>← Volver</button><button class="btn del" data-del="${o.id}">Borrar</button></div>
   <div class="page-wrap">
-    <input id="ptitle" class="ptitle" data-pt="${o.id}" value="${esc(o.t)}" placeholder="Sin título">
+    <textarea id="ptitle" class="ptitle" rows="1" data-pt="${o.id}" placeholder="Sin título">${esc(o.t)}</textarea>
     <div style="margin:10px 0 18px">${props}</div>
     <div class="mut" style="margin-bottom:2px">Página</div>
     <textarea class="body" data-pf="cu" data-pid="${o.id}" placeholder="Escribe aquí el contenido de la tarea...">${esc(o.cu)}</textarea>
@@ -970,7 +970,7 @@ function pageHtml2(o){
     <div class="pbar"><button class="btn" data-back>← Volver</button><div style="display:flex;gap:6px"><button class="btn" data-pedit style="font-size:12px;padding:4px 9px">✏️ Propiedades</button><button class="btn del" data-del="${o.id}">Borrar</button></div></div>
     <div class="cover pcov" style="background:linear-gradient(120deg,${g},${g}66);height:70px"></div>
     <div class="picon" style="color:${g}">${ico}</div>
-    <input id="ptitle" class="ptitle" data-pt="${o.id}" value="${esc(o.t)}" placeholder="Sin título">
+    <textarea id="ptitle" class="ptitle" rows="1" data-pt="${o.id}" placeholder="Sin título">${esc(o.t)}</textarea>
     <div class="pchips"><span class="pill" style="background:${g}22;color:${g}">${esc(gLabel(o.g))}</span>${chips}${o.h?'<span class="pill">✅ Hecha</span>':''}</div>
     ${o.tr?`<div class="pdesc box">${o.d?esc(o.d):'<span class="mut">Pendiente de resumir…</span>'}<details class="ptr"><summary>Transcripción completa</summary><div>${esc(o.tr)}</div></details></div>`:o.d?`<div class="pdesc">${esc(o.d)}</div>`:''}
     ${pEdit?`<div class="pgrid">${props}</div>`:''}
@@ -985,7 +985,7 @@ function pageHtml2Old(o){
     <div class="pbar"><button class="btn" data-back>← Volver</button><button class="btn del" data-del="${o.id}">Borrar</button></div>
     <div class="cover pcov" style="background:linear-gradient(120deg,${g},${g}66)"></div>
     <div class="picon" style="color:${g}">${ico}</div>
-    <input id="ptitle" class="ptitle" data-pt="${o.id}" value="${esc(o.t)}" placeholder="Sin título">
+    <textarea id="ptitle" class="ptitle" rows="1" data-pt="${o.id}" placeholder="Sin título">${esc(o.t)}</textarea>
     <div class="pgrid">${props}</div>
     <div class="cardbox"><div class="mut" style="margin-bottom:6px;font-weight:600">📝 Página</div>
     <textarea class="body" data-pf="cu" data-pid="${o.id}" placeholder="Escribe aquí el contenido de la tarea...">${esc(o.cu)}</textarea></div>
@@ -1096,6 +1096,7 @@ function confirmBorrar(t,onOk){
   document.getElementById('confirmDel').onclick=e=>{if(e.target.id==='confirmDel')close()};
   document.getElementById('cdYes').onclick=()=>{close();onOk()};
 }
+function fitPT(el){if(!el)return;el.style.height='auto';el.style.height=el.scrollHeight+'px'}
 function render(){
   const _home=!page&&section==='resumen';
   if(_home&&!window.__wasHome)window.__tg=false;
@@ -1110,7 +1111,7 @@ function render(){
   document.getElementById('main').innerHTML=noEmo(o?pageHtml2(o):secHtml());
   if(_liftId){const _n=document.querySelector(`[data-wdrag="${_liftId}"]`);if(_n&&wdT){_n.classList.add('lift');document.body.classList.add('wdl');wdT.el=_n}}
   if(askId){const a=S.find(x=>x.id===askId);if(a)document.getElementById('main').insertAdjacentHTML('beforeend',`<div class="ov"><div class="dlg2"><h3>¿Es carrusel o reel?</h3><p class="mut">“${esc(a.t||'Sin título')}” pasa a Por grabar</p><div class="fmtbtns"><button class="fmtb" data-fmt="Reel">${ico('clap',20)} Reel</button><button class="fmtb" data-fmt="Carrusel">${ico('image',20)} Carrusel</button></div><button class="btn" data-fmtcancel style="margin-top:12px">Ahora no</button></div></div>`)}
-  if(o){const el=document.getElementById('ptitle');if(el&&!el.value)el.focus()}
+  if(o){const el=document.getElementById('ptitle');fitPT(el);if(el&&!el.value)el.focus()}
   moveSeg(compG);
   moveNav();
 }
@@ -1149,9 +1150,11 @@ document.addEventListener('click',e=>{
   if('newg' in d)return startWiz({g:d.newg});
   if('new' in d)return novo({});
 });
+// el título no lleva saltos de línea: Enter cierra el teclado
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.matches&&e.target.matches('textarea.ptitle')){e.preventDefault();e.target.blur()}});
 document.addEventListener('input',e=>{
   const t=e.target;
-  if('pt' in t.dataset){const o=S.find(x=>x.id===t.dataset.pt);if(o){o.t=t.value;saveSoon()}return}
+  if('pt' in t.dataset){fitPT(t);const o=S.find(x=>x.id===t.dataset.pt);if(o){o.t=t.value;saveSoon()}return}
   if('pf' in t.dataset&&t.tagName!=='SELECT'&&t.type!=='checkbox'&&t.type!=='date'){
     const o=S.find(x=>x.id===t.dataset.pid);if(o){o[t.dataset.pf]=t.value;saveSoon()}
   }
