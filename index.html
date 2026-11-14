@@ -1348,9 +1348,10 @@ document.addEventListener('focusout',e=>{const t=e.target;if(!wiz||wizBusy||wizT
   if(t.dataset.frp==='0'){
     if(!a)return;
     b.min=a;
-    // fin por defecto: una hora después del inicio (se puede mover luego en la tarea) y avanza
+    // fin por defecto: una hora después del inicio; al cerrar el inicio se abre enseguida el selector de fin (sin setTimeout, para que iOS lo permita)
     if(!b.value||b.value<=a){const [h,m]=a.split(':').map(Number);const tot=Math.min(h*60+m+60,23*60+59);b.value=String(Math.floor(tot/60)).padStart(2,'0')+':'+String(tot%60).padStart(2,'0');frSync(b)}
-    wizAvanza(t);return;
+    b.focus();if(typeof b.showPicker==='function'){try{b.showPicker()}catch(err){}}
+    return;
   }
   if(!a||!b.value)return;
   if(b.value<=a){const [h,m]=a.split(':').map(Number);const tot=Math.min(h*60+m+60,23*60+59);b.value=String(Math.floor(tot/60)).padStart(2,'0')+':'+String(tot%60).padStart(2,'0');frSync(b)}
