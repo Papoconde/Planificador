@@ -1345,9 +1345,10 @@ document.addEventListener('focusout',e=>{const t=e.target;if(!wiz||wizBusy||wizT
   if(t.dataset.frp==='0'){
     if(!a)return;
     b.min=a;
-    // fin por defecto: una hora después del inicio (se puede mover luego), y avanza
+    // fin por defecto: una hora después del inicio; se abre su selector enseguida para poder moverlo
     if(!b.value||b.value<=a){const [h,m]=a.split(':').map(Number);const tot=Math.min(h*60+m+60,23*60+59);b.value=String(Math.floor(tot/60)).padStart(2,'0')+':'+String(tot%60).padStart(2,'0');frSync(b)}
-    wizAvanza(t);return;
+    setTimeout(()=>{if(wiz&&!wizBusy)b.focus()},0);
+    return;
   }
   if(!a||!b.value)return;
   if(b.value<=a){const [h,m]=a.split(':').map(Number);const tot=Math.min(h*60+m+60,23*60+59);b.value=String(Math.floor(tot/60)).padStart(2,'0')+':'+String(tot%60).padStart(2,'0');frSync(b)}
