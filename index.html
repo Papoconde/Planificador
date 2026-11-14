@@ -1331,6 +1331,12 @@ document.addEventListener('input',e=>{const t=e.target;if(wiz&&'wkey' in t.datas
 let wizNoFoco=false;
 function wizAvanza(inp){wizNoFoco=true;if(inp)inp.blur();const n=document.querySelector('#wiz [data-wnext]');if(n)n.click()}
 document.addEventListener('keydown',e=>{if(wiz&&e.key==='Enter'&&e.target.tagName==='INPUT'&&'wkey' in e.target.dataset){e.preventDefault();wizAvanza(e.target)}});
+// iOS: al pulsar Listo/✓ del teclado el campo pierde el foco y dispara "change" (sin keydown Enter).
+// Solo avanzamos si el foco se va sin tocar la pantalla; si se toca un botón del asistente, lo gestiona el click.
+let wizTap=false;
+document.addEventListener('pointerdown',e=>{wizTap=!(e.target.matches&&e.target.matches('#wiz input[data-wkey]'))},true);
+document.addEventListener('focusin',e=>{if(e.target.matches&&e.target.matches('#wiz [data-wkey]'))wizTap=false},true);
+document.addEventListener('change',e=>{if(!wiz||wizTap||e.target.tagName!=='INPUT'||!('wkey' in e.target.dataset))return;if(e.target.type==='text'||(e.target.type==='date'&&e.target.value))wizAvanza(e.target)});
 // iOS envía el envío implícito del formulario con la tecla de la barra del teclado (Listo/siguiente/✓)
 document.addEventListener('submit',e=>{if(!wiz||!e.target.matches('[data-wform]'))return;e.preventDefault();wizAvanza(e.target.querySelector('[data-wkey]'))});
 let tdrag=null;
