@@ -461,7 +461,8 @@ body.dark .wdlg .sumrow{background:#2a2a2a}
 @media(min-width:701px){.cal{grid-template-columns:repeat(7,minmax(0,1fr))}.dc .chip{max-width:100%}}
 body.dark .chip.gcal{background:#2a2a2a!important;color:#b5b3ad!important;border-left:3px dashed #6b6a66!important}
 /* calendario móvil: el icono de tipo se ve en lugar del punto */
-@media(max-width:700px){.dc .chip:has(svg){width:auto!important;height:auto!important;font-size:0!important;background:none!important;border:0!important;padding:0 1px!important;display:inline-flex!important;align-items:center;margin:2px 1px 0!important;color:var(--c,#8a8880)}.dc .chip svg{width:14px!important;height:14px!important;flex-shrink:0}}
+/* calendario móvil: celdas iguales y un punto de color por tarea (los iconos salen en la lista del día) */
+@media(max-width:700px){.cal{gap:4px}.dc{aspect-ratio:1/1;min-height:0!important;padding:5px;overflow:hidden;display:flex;flex-direction:column;align-items:center}.dc .num{align-self:flex-start;font-size:12px}.dc .chip{display:inline-block!important;font-size:0!important;width:6px!important;height:6px!important;padding:0!important;border:0!important;border-radius:50%!important;background:var(--c,#2383e2)!important;margin:2px 1px 0!important}.dc .chip svg{display:none!important}}
 @media(max-width:700px){body.dark .dc .chip.gcal{border:0!important;background:#8a8880!important;width:6px!important;height:6px!important;border-radius:50%!important;padding:0!important}}
 </style>
 </head>
