@@ -596,9 +596,9 @@ const byFl=(a,b)=>(a.fl||'9999').localeCompare(b.fl||'9999');
 
 function visibleKeys(d){
   const ks=['g','t','p'];
-  if(d.g==='Universidad'){ks.push('a','ty','fl','di','fr');}
+  if(d.g==='Universidad'){ks.push('a','ty','di','fl','fr');}
   else if(d.g==='Redes'){ks.push('pr','f','tv','n'); if(d.f)ks.push('d','hs','pu');}
-  else if(d.g){ks.push('e','fl','di');}
+  else if(d.g){ks.push('e','di','fl');}
   if(!ks.includes('d'))ks.push('d');
   ks.push('h','cu');
   return ks;
