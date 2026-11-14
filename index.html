@@ -899,7 +899,8 @@ function render(){
 }
 
 function novo(extra){
-  const o={id:'n'+Date.now(),h:false,g:'Universidad',t:'',cu:'',...extra};
+  const _h=new Date(), _fl=`${_h.getFullYear()}-12-${_h.getMonth()===11?27:31}`;
+  const o={id:'n'+Date.now(),h:false,g:'Universidad',t:'',cu:'',fl:_fl,...extra};
   S.push(o);page=o.id;persist();render();
 }
 
