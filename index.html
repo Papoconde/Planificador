@@ -446,6 +446,7 @@ body.dark .wdlg .sumrow{background:#2a2a2a}
 /* deslizar: la tarea se pone verde con la etiqueta Completado */
 .item{touch-action:pan-y;position:relative}
 .swwrap{position:relative}
+.item,.trow.wk{user-select:none;-webkit-user-select:none}
 .swbg{position:absolute;left:0;top:0;bottom:0;width:124px;background:#0f7b6c;color:#fff;border-radius:999px;display:flex;align-items:center;justify-content:center;gap:6px;overflow:hidden;white-space:nowrap;font-weight:600;font-size:14px;pointer-events:none;z-index:0}
 .swbg>span{flex-shrink:0}
 .swbg .swlbl{opacity:var(--swl,0)}
@@ -876,6 +877,10 @@ const ICONS={opt:'<circle cx="12" cy="12" r="9" stroke-dasharray="3.5 3"/>',fwd:
 const EMO={'⚪':'opt','⏩':'fwd','📅':'cal','📆':'cal','🎬':'clap','💡':'bulb','🎙':'mic','✅':'check','✓':'check','🔔':'bell','📂':'folder','🏠':'home','📌':'pin','🚀':'rocket','🏁':'flag','🎓':'cap','📤':'upload','🕒':'clock','☀':'sun','🌙':'moon','📹':'video','✂':'cut','✏':'pencil','📝':'note','🖌':'brush','🖼':'image','🗑':'trash','✕':'x','☰':'menu','⚙':'gear'};
 function ico(name,size){const z=size||16;return `<svg viewBox="0 0 24 24" width="${z}" height="${z}" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px" aria-hidden="true">${ICONS[name]||''}</svg>`}
 function noEmo(h){return h.replace(/(<[^>]*>)|([^<]+)/g,(m,tag,txt)=>tag?tag:txt.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{23E9}]\uFE0F?/gu,(e)=>{const k=EMO[e.replace(/\uFE0F/g,'')];return k?ico(k):''}))}
+function confirmBorrar(t){
+  const n=(t||'esta tarea').trim();
+  return confirm(`Vas a borrar «${n}».\n\nEsto ya no se puede recuperar: se quita de tu planificador y de la nube.\n\n¿Seguro que quieres borrarla?`);
+}
 function render(){
   const _home=!page&&section==='resumen';
   if(_home&&!window.__wasHome)window.__tg=false;
@@ -912,7 +917,7 @@ document.addEventListener('click',e=>{
   if('puSave' in d){const o=S.find(x=>x.id===askPu);const v=(document.getElementById('puDate')||{}).value;if(o&&v)o.pu=v;askPu=null;persist();return render()}
   if('puCancel' in d){askPu=null;return render()}
   if('back' in d){page=null;return render()}
-  if('del' in d){const di=S.find(x=>x.id===d.del);if(!confirm(`¿Borrar "${di?di.t:'esta tarea'}"? No se puede deshacer.`))return;S=S.filter(x=>x.id!==d.del);page=null;persist();return render()}
+  if('del' in d){const di=S.find(x=>x.id===d.del);if(!confirmBorrar(di?di.t:'esta tarea'))return;S=S.filter(x=>x.id!==d.del);page=null;persist();return render()}
   if('month' in d){calM+=+d.month;if(calM<0){calM=11;calY--}if(calM>11){calM=0;calY++}return render()}
   if('selday' in d){selDay=d.selday;return render()}
   if('newday' in d)return startWiz({di:d.newday});
@@ -1012,7 +1017,7 @@ document.addEventListener('click',e=>{
   const a=b.dataset.cxa;
   if(a==='open')page=o.id;
   else if(a==='done'){o.h=!o.h;o.hAt=o.h?ymd(hoyD):''}
-  else if(a==='del'){if(!confirm(`¿Borrar "${o.t}"? No se puede deshacer.`))return;S=S.filter(x=>x.id!==id);if(page===id)page=null}
+  else if(a==='del'){if(!confirmBorrar(o.t))return;S=S.filter(x=>x.id!==id);if(page===id)page=null}
   else if(a==='pr'){const _prev=o.pr;o.pr=b.dataset.cxv;if(o.pr==='Subido'){o.h=true;};if(o.pr==='Por grabar'&&_prev==='Idea')askId=o.id}
   persist();render();
 });
@@ -1255,14 +1260,15 @@ function swReset(el){
   setTimeout(()=>{if(!swDrag||swDrag.el!==el)swUnwrap(el)},260);
 }
 document.addEventListener('pointerdown',e=>{
-  if(e.pointerType!=='touch')return;
+  if(e.pointerType!=='touch'&&e.pointerType!=='mouse')return;
+  if(e.pointerType==='mouse'&&e.button!==0)return;
   const el=e.target.closest('.item,.trow.wk');
   if(!el||el.closest('.kanban')||el.classList.contains('done')||e.target.closest('select,textarea,button,input:not([type=checkbox])'))return;
   const oa=el.querySelector('[data-open]');if(!oa)return;
   swDrag={el,id:oa.dataset.open,x:e.clientX,y:e.clientY,on:false,dx:0};
 },{passive:true});
 document.addEventListener('pointermove',e=>{
-  if(!swDrag||e.pointerType!=='touch')return;
+  if(!swDrag||(e.pointerType!=='touch'&&e.pointerType!=='mouse'))return;
   const rawdx=e.clientX-swDrag.x, dy=e.clientY-swDrag.y;
   if(!swDrag.on){if(rawdx>12&&rawdx>Math.abs(dy)*1.5){swDrag.on=true;swDrag.el.style.transition='none';swDrag.el.setAttribute('data-swipe','1');if(swDrag.el.classList.contains('item'))swWrap(swDrag.el)}else return}
   const dx=Math.max(0,rawdx);
@@ -1271,8 +1277,9 @@ document.addEventListener('pointermove',e=>{
   swDrag.el.style.transform=`translateX(${Math.min(dx,200)}px)`;
   if(swDrag.el._swWrap)swDrag.el._swWrap.style.setProperty('--swl',Math.max(0,Math.min(1,(dx-40)/50)));
 },{passive:true});
+document.addEventListener('click',e=>{if(Date.now()-(window.__swBlock||0)<400){e.stopPropagation();e.preventDefault()}},true);
 function swEnd(){
-  if(!swDrag)return;const d=swDrag;swDrag=null;
+  if(!swDrag)return;const d=swDrag;swDrag=null;if(d.on)window.__swBlock=Date.now();
   if(!d.on)return;
   if(d.dx>=110){
     d.el.style.transition='transform .25s ease';d.el.style.transform='translateX(110%)';
