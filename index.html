@@ -727,7 +727,7 @@ function calHtml(){
     /* móvil: puntos agrupados por color (asignatura o grupo) con su número, así se ve cuántas tareas hay */
     const cols=new Map();
     ent.forEach(({o,pub})=>{const c=pub?gc('Redes'):ccol(o);cols.set(c,(cols.get(c)||0)+1)});
-    gcalV.filter(e=>e.d===key).forEach(()=>cols.set('#9b9a97',(cols.get('#9b9a97')||0)+1));
+    gcalV.filter(e=>e.d===key).forEach(()=>cols.set('rgba(155,154,151,.45)',(cols.get('rgba(155,154,151,.45)')||0)+1));
     const grp=[...cols.entries()];
     const dotsHtml=`<div class="dots">${grp.slice(0,3).map(([c,n])=>`<span class="dg"><i style="background:${c}"></i>${n>1?`<b>${n}</b>`:''}</span>`).join('')}${grp.length>3?`<b class="mx">+${grp.length-3}</b>`:''}</div>`;
     cells+=`<div class="dc${key===selDay?' sel':''}" data-selday="${key}"><div class="num">${d}</div>${ch}${gcalV.filter(e=>e.d===key).map(e=>`<span class="chip gcal" style="--c:#bdbcb8;background:#f1f0ee;border-left:3px dashed #bdbcb8;color:#8a8880">${esc(e.t)}</span>`).join('')}${dotsHtml}</div>`;
@@ -865,7 +865,7 @@ function almacenamientoKB(){
   try{for(let k=0;k<localStorage.length;k++){const key=localStorage.key(k);bytes+=(key.length+(localStorage.getItem(key)||'').length)*2}}catch(e){}
   return bytes/1024;
 }
-const APP_VER='v-todo-2';
+const APP_VER='v-cal-6';
 function ajustesHtml(){
   const perf=perfilCfg();
   const kb=almacenamientoKB(), cuota=5*1024, libre=Math.max(0,cuota-kb), pctU=Math.max(0,Math.min(100,Math.round(kb/cuota*100)));
