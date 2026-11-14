@@ -831,7 +831,7 @@ function propRow(o,p){
   let ctl;
   if(p.type==='check')ctl=`<input type="checkbox" data-pf="h" data-pid="${id}" ${o.h?'checked':''} style="width:18px;height:18px">`;
   else if(p.type==='sel')ctl=`<select data-pf="${p.k}" data-pid="${id}"><option value="">—</option>${opts(L[p.k],o[p.k]||'')}</select>`;
-  else if(p.type==='date')ctl=`<input type="date" data-pf="${p.k}" data-pid="${id}" value="${esc((o[p.k]||'').slice(0,10))}">`;
+  else if(p.type==='date')ctl=`<input type="date" data-pf="${p.k}" data-pid="${id}" min="${new Date().getFullYear()}-01-01" max="${new Date().getFullYear()+1}-12-31" value="${esc((o[p.k]||'').slice(0,10))}">`;
   else if(p.k==='fr')ctl=frCtl(o,id);
   else if(p.type==='area')ctl=`<textarea rows="2" data-pf="${p.k}" data-pid="${id}">${esc(o[p.k]||'')}</textarea>`;
   else ctl=`<input type="text" data-pf="${p.k}" data-pid="${id}" value="${esc(o[p.k]||'')}">`;
@@ -912,8 +912,7 @@ function render(){
 }
 
 function novo(extra){
-  const _h=new Date(), _fl=`${_h.getFullYear()}-12-${_h.getMonth()===11?27:31}`;
-  const o={id:'n'+Date.now(),h:false,g:'Universidad',t:'',cu:'',fl:_fl,...extra};
+  const o={id:'n'+Date.now(),h:false,g:'Universidad',t:'',cu:'',...extra};
   S.push(o);page=o.id;persist();render();
 }
 
@@ -1091,7 +1090,7 @@ function renderWiz(){
   if(p.type==='sel')ctl=`<div class="wopts">${L[k].map(v=>`<button class="wopt ${o[k]===v?'on':''}" data-wopt="${k}" data-wv="${esc(v)}">${({Entrega:'upload',Opcional:'opt',Reel:'clap',Carrusel:'image'})[v]?ico(({Entrega:'upload',Opcional:'opt',Reel:'clap',Carrusel:'image'})[v],16)+' ':''}${esc(v)}</button>`).join('')}${k==='g'?'<button class="wopt" data-voice>Idea</button>':''}</div>`;
   else if(k==='fr')ctl=frCtl(o,'w');
   else if(p.type==='area'||p.type==='pagina')ctl=`<textarea class="wtxt" rows="4" data-wkey="${k}">${esc(o[k]||'')}</textarea>`;
-  else if(p.type==='date')ctl=`<input type="date" class="wtxt" data-wkey="${k}" value="${esc((o[k]||'').slice(0,10))}">`;
+  else if(p.type==='date')ctl=`<input type="date" class="wtxt" data-wkey="${k}" min="${new Date().getFullYear()}-01-01" max="${new Date().getFullYear()+1}-12-31" value="${esc((o[k]||'').slice(0,10))}">`;
   else ctl=`<input type="text" class="wtxt" data-wkey="${k}" value="${esc(o[k]||'')}" placeholder="Escribe aquí...">`;
   const _p1=Math.round(wiz.i/ks.length*100), _p0=wiz.shown??0; wiz.shown=_p1;
   document.body.insertAdjacentHTML('beforeend',`<div class="ov" id="wiz"><div class="wdlg">
