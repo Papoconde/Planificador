@@ -1329,6 +1329,8 @@ document.addEventListener('click',e=>{
 document.addEventListener('input',e=>{const t=e.target;if(wiz&&'wkey' in t.dataset)wiz.o[t.dataset.wkey]=t.value});
 /* Enter en un campo del asistente: cierra el teclado y pasa al siguiente paso sin volver a abrirlo */
 let wizNoFoco=false;
+// en iPhone el selector de fecha/hora del asistente se abre al tocar el campo: lo abrimos explícitamente con ese toque
+document.addEventListener('click',e=>{const el=e.target.closest&&e.target.closest('#wiz input[type=date],#wiz input[type=time]');if(!el||typeof el.showPicker!=='function')return;try{el.showPicker()}catch(err){}});
 let wizBusy=false;
 function wizAvanza(inp){if(wizBusy)return;wizBusy=true;try{wizNoFoco=true;if(inp)inp.blur();const n=document.querySelector('#wiz [data-wnext]');if(n)n.click()}finally{wizBusy=false}}
 document.addEventListener('keydown',e=>{if(wiz&&e.key==='Enter'&&e.target.tagName==='INPUT'&&'wkey' in e.target.dataset){e.preventDefault();wizAvanza(e.target)}});
@@ -1345,10 +1347,9 @@ document.addEventListener('focusout',e=>{const t=e.target;if(!wiz||wizBusy||wizT
   if(t.dataset.frp==='0'){
     if(!a)return;
     b.min=a;
-    // fin por defecto: una hora después del inicio; se abre su selector enseguida para poder moverlo
+    // fin por defecto: una hora después del inicio (se puede mover luego en la tarea) y avanza
     if(!b.value||b.value<=a){const [h,m]=a.split(':').map(Number);const tot=Math.min(h*60+m+60,23*60+59);b.value=String(Math.floor(tot/60)).padStart(2,'0')+':'+String(tot%60).padStart(2,'0');frSync(b)}
-    setTimeout(()=>{if(wiz&&!wizBusy)b.focus()},0);
-    return;
+    wizAvanza(t);return;
   }
   if(!a||!b.value)return;
   if(b.value<=a){const [h,m]=a.split(':').map(Number);const tot=Math.min(h*60+m+60,23*60+59);b.value=String(Math.floor(tot/60)).padStart(2,'0')+':'+String(tot%60).padStart(2,'0');frSync(b)}
