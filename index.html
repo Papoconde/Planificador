@@ -879,7 +879,7 @@ function almacenamientoKB(){
   try{for(let k=0;k<localStorage.length;k++){const key=localStorage.key(k);bytes+=(key.length+(localStorage.getItem(key)||'').length)*2}}catch(e){}
   return bytes/1024;
 }
-const APP_VER='v-wiz-16';
+const APP_VER='v-wiz-17';
 function ajustesHtml(){
   const perf=perfilCfg();
   const kb=almacenamientoKB(), cuota=5*1024, libre=Math.max(0,cuota-kb), pctU=Math.max(0,Math.min(100,Math.round(kb/cuota*100)));
@@ -1103,6 +1103,10 @@ function render(){
   const _home=!page&&section==='resumen';
   if(_home&&!window.__wasHome)window.__tg=false;
   window.__wasHome=_home;
+  // la pastilla de Todas/Uni/Diseño solo se anima al llegar a Completado desde otra pantalla
+  const _comp=!page&&section==='completado';
+  const _entraComp=_comp&&!window.__wasComp;
+  window.__wasComp=_comp;
   document.getElementById('sync').textContent=sync;
   document.getElementById('nav').innerHTML=SECS.map(([k,i,l])=>`<button class="nav ${!page&&section===k?'on':''}" data-sec="${k}"><span class="ico">${i}</span><span class="lbl"> ${l}</span></button>`).join('')+``;
   const o=page&&S.find(x=>x.id===page);
@@ -1114,7 +1118,7 @@ function render(){
   if(_liftId){const _n=document.querySelector(`[data-wdrag="${_liftId}"]`);if(_n&&wdT){_n.classList.add('lift');document.body.classList.add('wdl');wdT.el=_n}}
   if(askId){const a=S.find(x=>x.id===askId);if(a)document.getElementById('main').insertAdjacentHTML('beforeend',`<div class="ov"><div class="dlg2"><h3>¿Es carrusel o reel?</h3><p class="mut">“${esc(a.t||'Sin título')}” pasa a Por grabar</p><div class="fmtbtns"><button class="fmtb" data-fmt="Reel">${ico('clap',20)} Reel</button><button class="fmtb" data-fmt="Carrusel">${ico('image',20)} Carrusel</button></div><button class="btn" data-fmtcancel style="margin-top:12px">Ahora no</button></div></div>`)}
   if(o){const el=document.getElementById('ptitle');fitPT(el);if(el&&!el.value)el.focus()}
-  moveSeg(compG);
+  moveSeg(compG,_entraComp);
   moveNav();
 }
 
@@ -1183,7 +1187,12 @@ function frSync(t){const wrap=t.closest('[data-frw]');if(!wrap)return;const ins=
 document.addEventListener('input',e=>{if('frp' in e.target.dataset)frSync(e.target)});
 document.addEventListener('change',e=>{if('frp' in e.target.dataset)frSync(e.target)});
 const CGK=['__all',...Object.keys(GC),''];
-function moveSeg(k){const seg=document.getElementById('seg');const ind=document.getElementById('segind');if(!seg||!ind)return;seg.querySelectorAll('[data-cg]').forEach(b=>b.classList.toggle('on',b.dataset.cg===k));const b=seg.querySelector(`[data-cg="${k}"]`);if(b){ind.style.width=b.offsetWidth+'px';ind.style.transform=`translateX(${b.offsetLeft}px)`}}
+function moveSeg(k,enter){const seg=document.getElementById('seg');const ind=document.getElementById('segind');if(!seg||!ind)return;seg.querySelectorAll('[data-cg]').forEach(b=>b.classList.toggle('on',b.dataset.cg===k));const b=seg.querySelector(`[data-cg="${k}"]`);if(!b)return;
+  // al entrar desde otra pantalla la pastilla crece desde cero; en los demás casos se coloca sin animar
+  ind.style.transition='none';
+  if(enter){ind.style.width='0px';void ind.offsetWidth;ind.style.transition=''}
+  ind.style.width=b.offsetWidth+'px';ind.style.transform=`translateX(${b.offsetLeft}px)`;
+  if(!enter){void ind.offsetWidth;ind.style.transition=''}}
 function moveNav(key){const ind=document.getElementById('navind');const side=document.querySelector('.side');if(!ind||!side)return;const k=key!==undefined?key:(page?null:section);const b=k?document.querySelector(`#nav [data-sec="${k}"]`):null;if(!b||getComputedStyle(ind).display==='none'){ind.style.opacity='0';return}ind.style.opacity='1';const r=b.getBoundingClientRect(),s=side.getBoundingClientRect();ind.style.width=r.width+'px';ind.style.height=r.height+'px';ind.style.transform=`translate3d(${r.left-s.left}px,${r.top-s.top}px,0)`}
 window.addEventListener('resize',()=>moveNav());
 let navDrag=null;
@@ -1214,7 +1223,7 @@ document.addEventListener('click',e=>{if(!e.target.closest('[data-pedit]'))retur
 document.addEventListener('change',e=>{if(e.target.dataset&&'cn' in e.target.dataset&&e.target.value){compP='n';compN=+e.target.value;render()}});
 document.addEventListener('click',e=>{const p=e.target.closest('[data-cp]');if(!p)return;compP=p.dataset.cp;render()});
 document.addEventListener('click',e=>{const p=e.target.closest('[data-co]');if(!p)return;compO=p.dataset.co;render()});
-document.addEventListener('click',e=>{const b=e.target.closest('[data-cg]');if(!b)return;const old=document.getElementById('segind');const from=old?{l:old.offsetLeft,w:old.offsetWidth}:null;compG=b.dataset.cg;render();const ind=document.getElementById('segind');const nb=document.querySelector('#seg [data-cg="'+compG+'"]');if(ind&&nb){if(from){ind.style.transition='none';ind.style.width=from.w+'px';ind.style.transform='translateX('+from.l+'px)';void ind.offsetWidth;ind.style.transition=''}ind.style.width=nb.offsetWidth+'px';ind.style.transform='translateX('+nb.offsetLeft+'px)'}});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-cg]');if(!b)return;compG=b.dataset.cg;render()});
 function taskIdFrom(el){
   let n=el;
   while(n&&n!==document.body){
