@@ -485,6 +485,11 @@ body.dark .qbtn{background:#232323;border-color:#333}
 body.dark .qbtn.on{background:#1f2a3d;border-color:#8fb8ff}
 /* iOS hace zoom al enfocar campos con letra menor de 16px: el buscador usa 16px */
 .qsearch{width:min(200px,46vw);box-sizing:border-box;padding:8px 12px;border-radius:10px;border:1px solid #e6e5e1;background:#fff;color:inherit;font-family:inherit;font-size:16px;line-height:1.2;outline:none}
+@keyframes qIn{from{width:0;opacity:0;padding-left:0;padding-right:0;border-width:0}to{width:min(200px,46vw);opacity:1;padding-left:12px;padding-right:12px;border-width:1px}}
+@keyframes qOut{from{width:min(200px,46vw);opacity:1;padding-left:12px;padding-right:12px;border-width:1px}to{width:0;opacity:0;padding-left:0;padding-right:0;border-width:0}}
+.qsearch{overflow:hidden;white-space:nowrap}
+.qsearch.qin{animation:qIn .26s cubic-bezier(.2,.8,.2,1) both}
+.qsearch.qout{animation:qOut .2s ease-in both}
 .qsearch:focus{border-color:#8fb8ff;box-shadow:0 0 0 3px rgba(143,184,255,.25)}
 body.dark .qsearch{background:#232323;border-color:#333;color:#e8e6e1}
 .calfil .btn .dot{width:8px;height:8px;margin-right:6px;display:inline-block;vertical-align:middle}
@@ -620,8 +625,13 @@ const qNorm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'
 const qOk=(o,k)=>{const q=qNorm((qB[k]||'').trim());return !q||qNorm((o.t||'')+' '+(o.a||'')).includes(q)};
 /* icono de lupa compacto; al pulsarlo aparece el campo de texto a su lado */
 let qOpen={todo:false,done:false};
-const qHtml=k=>{const open=qOpen[k]||!!qB[k];return `<div class="qrow"><button class="qbtn${open?' on':''}" data-qtoggle="${k}" aria-label="Buscar tarea" title="Buscar">${ico('search',18)}</button>${open?`<input class="qsearch" data-qb="${k}" type="search" placeholder="Buscar una tarea…" value="${esc(qB[k]||'')}" autocomplete="off">`:''}</div>`};
-document.addEventListener('click',e=>{const t=e.target.closest('[data-qtoggle]');if(!t)return;const k=t.dataset.qtoggle;qOpen[k]=!(qOpen[k]||!!qB[k]);if(!qOpen[k]){qB[k]='';}render();const n=document.querySelector(`[data-qb="${k}"]`);if(n)n.focus()});
+/* la lupa abre el campo hacia la izquierda y lo cierra con la misma animación; la animación solo suena al abrir (no al escribir) */
+let qNuevo={todo:false,done:false};
+const qHtml=k=>{const open=qOpen[k]||!!qB[k];const anim=qNuevo[k]?' qin':'';return `<div class="qrow">${open?`<input class="qsearch${anim}" data-qb="${k}" type="search" placeholder="Buscar una tarea…" value="${esc(qB[k]||'')}" autocomplete="off">`:''}<button class="qbtn${open?' on':''}" data-qtoggle="${k}" aria-label="Buscar tarea" title="Buscar">${ico('search',18)}</button></div>`};
+const qReset=()=>{qOpen={todo:false,done:false};qB={todo:'',done:''};qNuevo={todo:false,done:false}};
+document.addEventListener('click',e=>{const t=e.target.closest('[data-qtoggle]');if(!t)return;const k=t.dataset.qtoggle;const abierto=qOpen[k]||!!qB[k];
+  if(abierto){const n=document.querySelector(`[data-qb="${k}"]`);if(n){n.classList.add('qout');setTimeout(()=>{qOpen[k]=false;qB[k]='';qNuevo[k]=false;render()},200);return}qOpen[k]=false;qB[k]='';render();return}
+  qOpen[k]=true;qNuevo[k]=true;render();qNuevo[k]=false;const n=document.querySelector(`[data-qb="${k}"]`);if(n)n.focus()});
 const PRIO_RANK={Alta:2,Media:1,Baja:0};
 let prioBiasData=(()=>{try{return JSON.parse(localStorage.getItem('planPrioBias')||'{}')||{}}catch(e){return {}}})();
 function prioBias(){return prioBiasData}
@@ -825,7 +835,7 @@ function almacenamientoKB(){
   try{for(let k=0;k<localStorage.length;k++){const key=localStorage.key(k);bytes+=(key.length+(localStorage.getItem(key)||'').length)*2}}catch(e){}
   return bytes/1024;
 }
-const APP_VER='v-search-4';
+const APP_VER='v-search-5';
 function ajustesHtml(){
   const perf=perfilCfg();
   const kb=almacenamientoKB(), cuota=5*1024, libre=Math.max(0,cuota-kb), pctU=Math.max(0,Math.min(100,Math.round(kb/cuota*100)));
@@ -1067,7 +1077,7 @@ document.addEventListener('click',e=>{
   const t=e.target.closest('[data-open],[data-sec],[data-rv],[data-toggle-ideas],[data-theme],[data-fmt],[data-fmtcancel],[data-pu-save],[data-pu-cancel],[data-new],[data-newg],[data-newday],[data-selday],[data-back],[data-del],[data-month],[data-calg]');
   if(!t)return;
   const d=t.dataset;
-  if('open' in d){page=d.open;return render()}
+  if('open' in d){qReset();page=d.open;return render()}
   if('sec' in d){section=d.sec;page=null;return render()}
   if('rv' in d){redesView=d.rv;return render()}
   if('toggleIdeas' in d){showIdeas=!showIdeas;return render()}
