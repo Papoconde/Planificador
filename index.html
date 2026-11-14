@@ -877,7 +877,7 @@ function almacenamientoKB(){
   try{for(let k=0;k<localStorage.length;k++){const key=localStorage.key(k);bytes+=(key.length+(localStorage.getItem(key)||'').length)*2}}catch(e){}
   return bytes/1024;
 }
-const APP_VER='v-wiz-11';
+const APP_VER='v-wiz-12';
 function ajustesHtml(){
   const perf=perfilCfg();
   const kb=almacenamientoKB(), cuota=5*1024, libre=Math.max(0,cuota-kb), pctU=Math.max(0,Math.min(100,Math.round(kb/cuota*100)));
@@ -1353,6 +1353,8 @@ document.addEventListener('pointerdown',e=>{wizTap=!(e.target.matches&&e.target.
 document.addEventListener('focusin',e=>{if(e.target.matches&&e.target.matches('#wiz input'))wizTap=false},true);
 // textos y descripciones: al cerrar el teclado con ✓ (change) se pasa al siguiente paso; en la descripción no hay Enter para avanzar
 document.addEventListener('change',e=>{if(!wiz||wizTap||!('wkey' in e.target.dataset))return;const t=e.target;if(!((t.tagName==='INPUT'&&t.type==='text')||t.tagName==='TEXTAREA'))return;wizAvanza(t)});
+// descripción (textarea): al salir del campo con ✓ del teclado se pasa al siguiente paso, aunque iOS no dispare "change"
+document.addEventListener('focusout',e=>{const t=e.target;if(!wiz||wizBusy||wizTap||t.tagName!=='TEXTAREA'||!('wkey' in t.dataset)||!t.value.trim())return;wizAvanza(t)},true);
 // fecha: iOS dispara "change" mientras se gira la rueda, así que avanzamos solo cuando el selector se cierra (Listo) y el campo pierde el foco
 document.addEventListener('focusout',e=>{const t=e.target;if(!wiz||wizBusy||wizTap||t.tagName!=='INPUT'||t.type!=='date'||!('wkey' in t.dataset)||!t.value)return;wizAvanza(t)},true);
 // franja horaria (inicio → fin): el fin siempre es posterior al inicio y, al cerrar el fin (Listo), avanza
