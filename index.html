@@ -477,16 +477,21 @@ body.dark .chip.gcal{background:#2a2a2a!important;color:#b5b3ad!important;border
 .dots{display:none}
 .calfil{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 12px}
 .hdrq{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.hdrq h1{margin:0}
+.hdrq h1{margin:0;white-space:nowrap;flex:0 0 auto}
+.hdrq .qrow{flex:0 1 auto;min-width:0;justify-content:flex-end}
+.hdrq .qsearch{flex:0 1 auto;min-width:0}
+.hdrq .qclr{padding:0 8px;font-size:12px}
 .qrow{display:flex;align-items:center;gap:8px;flex:0 0 auto;margin:0}
 .qbtn{width:36px;height:36px;padding:0;display:inline-flex;align-items:center;justify-content:center;border-radius:10px;border:1px solid #e6e5e1;background:#fff;color:inherit;cursor:pointer;flex:0 0 auto}
 .qbtn.on{background:#e8f0fe;border-color:#8fb8ff}
+.qclr{flex:0 0 auto;height:36px;padding:0 10px;border-radius:10px;border:0;background:#ededeb;color:#6b6a66;font:600 13px/1 Inter,system-ui,sans-serif;cursor:pointer;white-space:nowrap}
+body.dark .qclr{background:#2c2c2c;color:#b5b3ad}
 body.dark .qbtn{background:#232323;border-color:#333}
 body.dark .qbtn.on{background:#1f2a3d;border-color:#8fb8ff}
 /* iOS hace zoom al enfocar campos con letra menor de 16px: el buscador usa 16px */
-.qsearch{width:min(200px,46vw);box-sizing:border-box;padding:8px 12px;border-radius:10px;border:1px solid #e6e5e1;background:#fff;color:inherit;font-family:inherit;font-size:16px;line-height:1.2;outline:none}
-@keyframes qIn{from{width:0;opacity:0;padding-left:0;padding-right:0;border-width:0}to{width:min(200px,46vw);opacity:1;padding-left:12px;padding-right:12px;border-width:1px}}
-@keyframes qOut{from{width:min(200px,46vw);opacity:1;padding-left:12px;padding-right:12px;border-width:1px}to{width:0;opacity:0;padding-left:0;padding-right:0;border-width:0}}
+.qsearch{width:min(150px,38vw);box-sizing:border-box;padding:8px 12px;border-radius:10px;border:1px solid #e6e5e1;background:#fff;color:inherit;font-family:inherit;font-size:16px;line-height:1.2;outline:none}
+@keyframes qIn{from{width:0;opacity:0;padding-left:0;padding-right:0;border-width:0}to{width:min(150px,38vw);opacity:1;padding-left:12px;padding-right:12px;border-width:1px}}
+@keyframes qOut{from{width:min(150px,38vw);opacity:1;padding-left:12px;padding-right:12px;border-width:1px}to{width:0;opacity:0;padding-left:0;padding-right:0;border-width:0}}
 .qsearch{overflow:hidden;white-space:nowrap}
 .qsearch.qin{animation:qIn .26s cubic-bezier(.2,.8,.2,1) both}
 .qsearch.qout{animation:qOut .2s ease-in both}
@@ -630,13 +635,14 @@ const qOk=(o,k)=>{const q=qNorm((qB[k]||'').trim());return !q||qNorm((o.t||'')+'
 let qOpen={todo:false,done:false};
 /* la lupa abre el campo hacia la izquierda y lo cierra con la misma animación; la animación solo suena al abrir (no al escribir) */
 let qNuevo={todo:false,done:false};
-const qHtml=k=>{const open=qOpen[k]||!!qB[k];const anim=qNuevo[k]?' qin':'';return `<div class="qrow">${open?`<input class="qsearch${anim}" data-qb="${k}" type="search" placeholder="Buscar una tarea…" value="${esc(qB[k]||'')}" autocomplete="off">`:''}<button class="qbtn${open?' on':''}" data-qtoggle="${k}" aria-label="Buscar tarea" title="Buscar">${ico('search',18)}</button></div>`};
+const qHtml=k=>{const open=qOpen[k]||!!qB[k];const anim=qNuevo[k]?' qin':'';const hay=!!qB[k];return `<div class="qrow">${open?`<input class="qsearch${anim}" data-qb="${k}" type="search" placeholder="Buscar una tarea…" value="${esc(qB[k]||'')}" autocomplete="off">`:''}${hay?`<button class="qclr" data-qclear="${k}">Borrar filtro</button>`:''}<button class="qbtn${open?' on':''}" data-qtoggle="${k}" aria-label="Buscar tarea" title="Buscar">${ico('search',18)}</button></div>`};
 /* cierra el buscador con la animación inversa; se usa al pulsar la lupa o al quitarse el teclado */
 const closeQ=k=>{const n=document.querySelector(`[data-qb="${k}"]`);if(n){if(n.classList.contains('qout'))return;n.classList.add('qout');setTimeout(()=>{qOpen[k]=false;qB[k]='';qNuevo[k]=false;render()},200);return}qOpen[k]=false;qB[k]='';render()};
-document.addEventListener('focusout',e=>{const k=e.target.dataset&&e.target.dataset.qb;if(!k)return;setTimeout(()=>{const n=document.querySelector(`[data-qb="${k}"]`);if(!n||document.activeElement===n)return;closeQ(k)},150)});
+document.addEventListener('focusout',e=>{const k=e.target.dataset&&e.target.dataset.qb;if(!k)return;setTimeout(()=>{const n=document.querySelector(`[data-qb="${k}"]`);if(!n||document.activeElement===n||qB[k])return;closeQ(k)},150)});
+document.addEventListener('click',e=>{const c=e.target.closest('[data-qclear]');if(!c)return;closeQ(c.dataset.qclear)});
 const qReset=()=>{qOpen={todo:false,done:false};qB={todo:'',done:''};qNuevo={todo:false,done:false}};
 document.addEventListener('click',e=>{const t=e.target.closest('[data-qtoggle]');if(!t)return;const k=t.dataset.qtoggle;const abierto=qOpen[k]||!!qB[k];
-  if(abierto){closeQ(k);return}
+  if(abierto){if(qB[k]){const n=document.querySelector(`[data-qb="${k}"]`);if(n)n.focus();return}closeQ(k);return}
   qOpen[k]=true;qNuevo[k]=true;render();qNuevo[k]=false;const n=document.querySelector(`[data-qb="${k}"]`);if(n)n.focus()});
 const PRIO_RANK={Alta:2,Media:1,Baja:0};
 let prioBiasData=(()=>{try{return JSON.parse(localStorage.getItem('planPrioBias')||'{}')||{}}catch(e){return {}}})();
@@ -846,7 +852,7 @@ function almacenamientoKB(){
   try{for(let k=0;k<localStorage.length;k++){const key=localStorage.key(k);bytes+=(key.length+(localStorage.getItem(key)||'').length)*2}}catch(e){}
   return bytes/1024;
 }
-const APP_VER='v-cal-5';
+const APP_VER='v-search-9';
 function ajustesHtml(){
   const perf=perfilCfg();
   const kb=almacenamientoKB(), cuota=5*1024, libre=Math.max(0,cuota-kb), pctU=Math.max(0,Math.min(100,Math.round(kb/cuota*100)));
