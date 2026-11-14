@@ -70,6 +70,15 @@ body.dark .nav.nueva{color:#fff}
 body.dark .wdlg{background:#232323;color:#e8e6e1}
 body.dark .wopt{background:#232323;color:#e8e6e1;border-color:#333}
 body.dark .wtxt{background:#1e1e1e;color:#e8e6e1;border-color:#333}
+/* franja horaria: inicio → fin, grande y con etiqueta */
+.frw{display:flex;gap:10px;align-items:center;justify-content:center;margin:18px 0}
+.frc{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px;align-items:stretch}
+.frc small{font-size:12px;font-weight:600;color:#9b9a97;text-transform:uppercase;letter-spacing:.04em;text-align:center}
+.frc input[type=time]{width:100%;box-sizing:border-box;height:72px;font:inherit;font-size:28px;font-weight:700;text-align:center;color:#37352f;background:#fff;border:2px solid #e6e5e1;border-radius:16px;-webkit-appearance:none;appearance:none;outline:none}
+.frc input[type=time]:focus{border-color:#2383e2;background:#eef5fd}
+.frarr{font-size:22px;color:#9b9a97;padding-top:18px}
+body.dark .frc input[type=time]{background:#2a2a2a;border-color:#3a3a3a;color:#e8e6e1}
+body.dark .frc input[type=time]:focus{background:#1f2a38;border-color:#2383e2}
 body.dark .wbar{background:#333}
 .sumlist{display:grid;gap:6px;margin:12px 0}
 .sumrow{display:flex;justify-content:space-between;gap:12px;padding:10px 12px;background:#f7f6f3;border-radius:10px}
@@ -596,7 +605,7 @@ function visibleKeys(d){
 }
 
 function frParts(v){const [a,b]=String(v||'').split('-');return [a||'',b||'']}
-function frCtl(o,id){const [a,b]=frParts(o.fr);return `<div data-frw="${id}" style="display:flex;gap:8px;align-items:center"><input type="time" data-frp="0" value="${a}" style="width:auto"><span class="mut">→</span><input type="time" data-frp="1" value="${b}" style="width:auto"></div>`}
+function frCtl(o,id){const [a,b]=frParts(o.fr);return `<div data-frw="${id}" class="frw"><div class="frc"><small>Inicio</small><input type="time" data-frp="0" value="${a}"></div><span class="frarr">→</span><div class="frc"><small>Fin</small><input type="time" data-frp="1" value="${b}"></div></div>`}
 function card(o,hora){
   const ref=o.fl||o.di;
   const fd=(ref&&!hora)?new Date(ref.slice(0,10)+'T12:00:00'):null;
@@ -1350,9 +1359,8 @@ document.addEventListener('focusout',e=>{const t=e.target;if(!wiz||wizBusy||wizT
   if(t.dataset.frp==='0'){
     if(!a)return;
     b.min=a;
-    // fin por defecto: una hora después del inicio; al cerrar el inicio se abre enseguida el selector de fin (sin setTimeout, para que iOS lo permita)
+    // fin por defecto: una hora después del inicio; el paso no avanza hasta que se toca el fin y se cierra
     if(!b.value||b.value<=a){const [h,m]=a.split(':').map(Number);const tot=Math.min(h*60+m+60,23*60+59);b.value=String(Math.floor(tot/60)).padStart(2,'0')+':'+String(tot%60).padStart(2,'0');frSync(b)}
-    b.focus();if(typeof b.showPicker==='function'){try{b.showPicker()}catch(err){}}
     return;
   }
   if(!a||!b.value)return;
