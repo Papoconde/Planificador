@@ -878,7 +878,7 @@ function almacenamientoKB(){
   try{for(let k=0;k<localStorage.length;k++){const key=localStorage.key(k);bytes+=(key.length+(localStorage.getItem(key)||'').length)*2}}catch(e){}
   return bytes/1024;
 }
-const APP_VER='v-wiz-13';
+const APP_VER='v-wiz-14';
 function ajustesHtml(){
   const perf=perfilCfg();
   const kb=almacenamientoKB(), cuota=5*1024, libre=Math.max(0,cuota-kb), pctU=Math.max(0,Math.min(100,Math.round(kb/cuota*100)));
@@ -1529,7 +1529,7 @@ document.addEventListener('pointerdown',e=>{
   const el=e.target.closest('.item,.trow.wk');
   if(!el||el.closest('.kanban')||el.classList.contains('done')||e.target.closest('select,textarea,button,input:not([type=checkbox])'))return;
   const oa=el.querySelector('[data-open]');if(!oa)return;
-  swDrag={el,id:oa.dataset.open,x:e.clientX,y:e.clientY,on:false,dx:0};
+  swDrag={el,id:oa.dataset.open,x:e.clientX,y:e.clientY,on:false,dx:0,pt:e.pointerType};
 },{passive:true});
 document.addEventListener('pointermove',e=>{
   if(!swDrag||(e.pointerType!=='touch'&&e.pointerType!=='mouse'))return;
@@ -1543,16 +1543,19 @@ document.addEventListener('pointermove',e=>{
   if(swDrag.el._swWrap)swDrag.el._swWrap.style.setProperty('--swl',Math.max(0,Math.min(1,(dx-40)/50)));
 },{passive:true});
 document.addEventListener('click',e=>{if(Date.now()-(window.__swBlock||0)<400){e.stopPropagation();e.preventDefault()}},true);
-function swEnd(){
-  if(!swDrag)return;const d=swDrag;swDrag=null;if(d.on)window.__swBlock=Date.now();
+function swEnd(e){
+  if(!swDrag)return;const d=swDrag;swDrag=null;
+  // cualquier arrastre (también hacia la izquierda) evita que el soltar abra la tarea
+  const mv=e?Math.max(Math.abs(e.clientX-d.x),Math.abs(e.clientY-d.y)):0;if(d.on||mv>8)window.__swBlock=Date.now();
   if(!d.on)return;
-  if(d.dx>=110){
+  // con ratón basta un poco menos de recorrido que con el dedo
+  if(d.dx>=(d.pt==='mouse'?80:110)){
     d.el.style.transition='transform .25s ease';d.el.style.transform='translateX(110%)';
     const id=d.id;
     setTimeout(()=>{const o=S.find(x=>x.id===id);if(o){o.h=true;o.hAt=ymd(hoyD);persist();render()}showSwToast(id)},150);
   }else{swReset(d.el)}
 }
-document.addEventListener('pointerup',swEnd);
+document.addEventListener('pointerup',e=>swEnd(e));
 document.addEventListener('pointercancel',()=>{if(swDrag){swReset(swDrag.el);swDrag=null}});
 function showSwToast(id){
   document.querySelectorAll('.swtoast').forEach(x=>x.remove());
