@@ -1078,9 +1078,14 @@ document.addEventListener('dragstart',e=>{if(typeof tdrag!=='undefined'&&tdrag&&
 document.addEventListener('contextmenu',e=>{if((wdT&&wdT.lift)||(e.target.closest&&e.target.closest('[data-wdrag]')))e.preventDefault()});
 document.addEventListener('pointerup',wdEnd);
 document.addEventListener('pointercancel',()=>{wdGhostOff();if(wdT){clearTimeout(wdT.t);wdT.el.classList.remove('lift');wdT.el.style.opacity='';document.body.classList.remove('wdl');wdT=null}document.querySelectorAll('.wkday.hot').forEach(x=>x.classList.remove('hot'))});
-function confirmBorrar(t){
-  const n=(t||'esta tarea').trim();
-  return confirm(`Vas a borrar «${n}».\n\nEsto ya no se puede recuperar: se quita de tu planificador y de la nube.\n\n¿Seguro que quieres borrarla?`);
+function confirmBorrar(t,onOk){
+  const n=esc((t||'esta tarea').trim());
+  document.getElementById('confirmDel')?.remove();
+  document.body.insertAdjacentHTML('beforeend',`<div class="ov" id="confirmDel"><div class="dlg2"><p style="margin:0 0 10px;font-size:16px">Vas a borrar «${n}».</p><p class="mut" style="margin:0 0 10px">Esto ya no se puede recuperar: se quita de tu planificador y de la nube.</p><p style="margin:0 0 4px;font-size:16px">¿Seguro que quieres borrarla?</p><div class="wbtns" style="justify-content:center;margin-top:16px"><button class="btn" id="cdNo">Cancelar</button><button class="btn" id="cdYes" style="background:#eb5757;color:#fff;border-color:#eb5757">Borrar</button></div></div></div>`);
+  const close=()=>document.getElementById('confirmDel')?.remove();
+  document.getElementById('cdNo').onclick=close;
+  document.getElementById('confirmDel').onclick=e=>{if(e.target.id==='confirmDel')close()};
+  document.getElementById('cdYes').onclick=()=>{close();onOk()};
 }
 function render(){
   const _home=!page&&section==='resumen';
@@ -1108,7 +1113,14 @@ function novo(extra){
 
 document.addEventListener('click',e=>{
   const t=e.target.closest('[data-open],[data-sec],[data-rv],[data-toggle-ideas],[data-theme],[data-fmt],[data-fmtcancel],[data-pu-save],[data-pu-cancel],[data-new],[data-newg],[data-newday],[data-selday],[data-back],[data-del],[data-month],[data-calg]');
-  if(!t)return;
+  if(!t){
+    // toque en cualquier punto de la tarjeta (no en controles) abre la tarea
+    const card=e.target.closest('.item,.trow');
+    if(!card||e.target.closest('button,input,select,textarea,label,a,[data-pedit],[data-fmt],[data-swundo]'))return;
+    const oa=card.querySelector('[data-open]');
+    if(oa){qReset();page=oa.dataset.open;return render()}
+    return;
+  }
   const d=t.dataset;
   if('open' in d){qReset();page=d.open;return render()}
   if('sec' in d){section=d.sec;page=null;return render()}
@@ -1120,7 +1132,7 @@ document.addEventListener('click',e=>{
   if('puSave' in d){const o=S.find(x=>x.id===askPu);const v=(document.getElementById('puDate')||{}).value;if(o&&v)o.pu=v;askPu=null;persist();return render()}
   if('puCancel' in d){askPu=null;return render()}
   if('back' in d){page=null;return render()}
-  if('del' in d){const di=S.find(x=>x.id===d.del);if(!confirmBorrar(di?di.t:'esta tarea'))return;S=S.filter(x=>x.id!==d.del);page=null;persist();return render()}
+  if('del' in d){const di=S.find(x=>x.id===d.del);return confirmBorrar(di?di.t:'esta tarea',()=>{S=S.filter(x=>x.id!==d.del);page=null;persist();render()})}
   if('calg' in d){calG=d.calg;return render()}
   if('month' in d){calM+=+d.month;if(calM<0){calM=11;calY--}if(calM>11){calM=0;calY++}return render()}
   if('selday' in d){selDay=d.selday;return render()}
@@ -1223,7 +1235,7 @@ document.addEventListener('click',e=>{
   const a=b.dataset.cxa;
   if(a==='open')page=o.id;
   else if(a==='done'){o.h=!o.h;o.hAt=o.h?ymd(hoyD):''}
-  else if(a==='del'){if(!confirmBorrar(o.t))return;S=S.filter(x=>x.id!==id);if(page===id)page=null}
+  else if(a==='del'){return confirmBorrar(o.t,()=>{S=S.filter(x=>x.id!==id);if(page===id)page=null;persist();render()})}
   else if(a==='pr'){const _prev=o.pr;o.pr=b.dataset.cxv;if(o.pr==='Subido'){o.h=true;};if(o.pr==='Por grabar'&&_prev==='Idea')askId=o.id}
   persist();render();
 });
@@ -1284,7 +1296,7 @@ function renderWiz(){
   else if(k==='fr')ctl=frCtl(o,'w');
   else if(p.type==='area'||p.type==='pagina')ctl=`<textarea class="wtxt" rows="4" data-wkey="${k}">${esc(o[k]||'')}</textarea>`;
   else if(p.type==='date')ctl=`<input type="date" class="wtxt" data-wkey="${k}" min="${new Date().getFullYear()}-01-01" max="${new Date().getFullYear()+1}-12-31" value="${esc((o[k]||'').slice(0,10))}">`;
-  else ctl=`<input type="text" class="wtxt" enterkeyhint="next" data-wkey="${k}" value="${esc(o[k]||'')}" placeholder="Escribe aquí...">`;
+  else ctl=`<form data-wform style="margin:0" onsubmit="return false"><input type="text" class="wtxt" enterkeyhint="done" data-wkey="${k}" value="${esc(o[k]||'')}" placeholder="Escribe aquí..."></form>`;
   const _p1=Math.round(wiz.i/ks.length*100), _p0=wiz.shown??0; wiz.shown=_p1;
   document.body.insertAdjacentHTML('beforeend',`<div class="ov" id="wiz"><div class="wdlg">
     <button class="wx" data-wcancel>✕</button>
@@ -1295,7 +1307,6 @@ function renderWiz(){
     <div class="wbtns">
       <div class="wnav">
         <button class="wArr" data-wback ${wiz.i>0?'':'disabled'} title="Atrás">←</button>
-        <button class="wskip" data-wskip>Omitir</button>
         <button class="wArr wArrP${last?' wtxtb':''}" data-wnext>${last?'Guardar ✓':'→'}</button>
       </div>
     </div></div></div>`);
@@ -1313,18 +1324,20 @@ document.addEventListener('click',e=>{
   if('wcreate' in d)return saveWiz();
   if('wcancel' in d)return closeWiz();
   if('wback' in d){wiz.i=Math.max(0,wiz.i-1);return renderWiz()}
-  if('wskip' in d){wiz.i++;return renderWiz()}
   if('wnext' in d){const k=wizKeys()[wiz.i];const o=wiz.o;if(k==='g'&&!o.g)return;if(k==='t'&&!(o.t||'').trim())return;wiz.i++;return renderWiz()}
 });
 document.addEventListener('input',e=>{const t=e.target;if(wiz&&'wkey' in t.dataset)wiz.o[t.dataset.wkey]=t.value});
 /* Enter en un campo del asistente: cierra el teclado y pasa al siguiente paso sin volver a abrirlo */
 let wizNoFoco=false;
-document.addEventListener('keydown',e=>{if(wiz&&e.key==='Enter'&&e.target.tagName==='INPUT'&&'wkey' in e.target.dataset){e.preventDefault();wizNoFoco=true;e.target.blur();const n=document.querySelector('#wiz [data-wnext]');if(n)n.click()}});
+function wizAvanza(inp){wizNoFoco=true;if(inp)inp.blur();const n=document.querySelector('#wiz [data-wnext]');if(n)n.click()}
+document.addEventListener('keydown',e=>{if(wiz&&e.key==='Enter'&&e.target.tagName==='INPUT'&&'wkey' in e.target.dataset){e.preventDefault();wizAvanza(e.target)}});
+// iOS envía el envío implícito del formulario con la tecla de la barra del teclado (Listo/siguiente/✓)
+document.addEventListener('submit',e=>{if(!wiz||!e.target.matches('[data-wform]'))return;e.preventDefault();wizAvanza(e.target.querySelector('[data-wkey]'))});
 let tdrag=null;
 function clearDropHL(){document.querySelectorAll('[data-drop]').forEach(c=>c.classList.remove('hot'))}
 document.addEventListener('pointerdown',e=>{if(e.pointerType!=='touch')return;const el=e.target.closest('[data-drag]');if(el){tdrag={id:el.dataset.drag,x:e.clientX,y:e.clientY,on:false,el};tdrag.t=setTimeout(()=>{el.classList.add('lift');wdGhostOn(el,tdrag.x,tdrag.y)},200)}});
 document.addEventListener('pointermove',e=>{if(!tdrag||e.pointerType!=='touch')return;if(tdrag.el.classList.contains('lift'))wdGhostMove(e.clientX,e.clientY);const dx=e.clientX-tdrag.x,dy=e.clientY-tdrag.y;if(!tdrag.on){if(Math.abs(dx)>12&&Math.abs(dx)>Math.abs(dy)*1.5){tdrag.on=true;tdrag.el.style.opacity='.5'}else return}const col=document.elementFromPoint(e.clientX,e.clientY)?.closest('[data-drop]');document.querySelectorAll('[data-drop]').forEach(c=>c.classList.toggle('hot',c===col))});
-document.addEventListener('pointerup',e=>{if(!tdrag)return;const d=tdrag;tdrag=null;clearDropHL();clearTimeout(d.t);d.el.classList.remove('lift');if(!d.on){wdGhostOff();return}const col=document.elementFromPoint(e.clientX,e.clientY)?.closest('[data-drop]');const o=S.find(x=>x.id===d.id);wdGhostLand(col,()=>{if(col&&o){const _prev=o.pr;o.pr=col.dataset.drop;if(o.pr==='Subido'){o.h=true;}if(o.pr==='Por grabar'&&_prev==='Idea')askId=o.id;persist()}render()})});
+document.addEventListener('pointerup',e=>{if(!tdrag)return;const d=tdrag;tdrag=null;clearDropHL();clearTimeout(d.t);d.el.classList.remove('lift');if(!d.on){wdGhostOff();return}window.__swBlock=Date.now();const col=document.elementFromPoint(e.clientX,e.clientY)?.closest('[data-drop]');const o=S.find(x=>x.id===d.id);wdGhostLand(col,()=>{if(col&&o){const _prev=o.pr;o.pr=col.dataset.drop;if(o.pr==='Subido'){o.h=true;}if(o.pr==='Por grabar'&&_prev==='Idea')askId=o.id;persist()}render()})});
 document.addEventListener('pointercancel',()=>{wdGhostOff();if(tdrag){clearTimeout(tdrag.t);tdrag.el.classList.remove('lift')}tdrag=null;clearDropHL()});
 let dragId=null;
 document.addEventListener('dragstart',e=>{const el=e.target.closest('[data-drag]');if(!el)return;dragId=el.dataset.drag;e.dataTransfer.effectAllowed='move';try{e.dataTransfer.setData('text/plain',dragId)}catch(err){}});
