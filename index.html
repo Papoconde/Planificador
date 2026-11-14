@@ -475,6 +475,8 @@ body.dark .chip.gcal{background:#2a2a2a!important;color:#b5b3ad!important;border
 @media(max-width:700px){body.dark .dc .chip.gcal{border:0!important;background:#8a8880!important;width:6px!important;height:6px!important;border-radius:50%!important;padding:0!important}}
 /* calendario móvil, estilo Calendario de iOS: número centrado (en círculo si es el día elegido) y puntos de color debajo */
 .dots{display:none}
+.calfil{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 12px}
+.calfil .btn .dot{width:8px;height:8px;margin-right:6px;display:inline-block;vertical-align:middle}
 @media(max-width:700px){
   .cal{gap:2px 0}
   .dc{aspect-ratio:auto!important;min-height:58px!important;height:auto;padding:6px 0 7px!important;display:flex!important;flex-direction:column;align-items:center;gap:5px;overflow:hidden;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
@@ -524,7 +526,7 @@ const PRC={Idea:'#8e6fd6','Por grabar':'#9b9a97',Grabado:'#d9a20f',Editado:'#238
 const SECS=[['resumen',`<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="url(#gi1)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><defs><linearGradient id="gi1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#8fb8ff"/></linearGradient></defs><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>`,'Resumen'],['semana',`<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="url(#gi2)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><defs><linearGradient id="gi2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#8fb8ff"/></linearGradient></defs><path d="M6 8a6 6 0 0 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10 21a2 2 0 0 0 4 0"/></svg>`,'Esta semana'],['todo',`<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="url(#gi3)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><defs><linearGradient id="gi3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#8fb8ff"/></linearGradient></defs><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 12l3 3 5-6"/></svg>`,'To Do'],['cal',`<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="url(#gi4)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><defs><linearGradient id="gi4" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#8fb8ff"/></linearGradient></defs><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>`,'Calendario'],['redes',`<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="url(#gi5)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><defs><linearGradient id="gi5" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#8fb8ff"/></linearGradient></defs><rect x="3" y="10" width="18" height="11" rx="2.5"/><path d="M3 10V7.5a1.5 1.5 0 0 1 1.5-1.5h15A1.5 1.5 0 0 1 21 7.5V10z"/><path d="M7 6l3 4M12 6l3 4M17 6l2 3"/></svg>`,'Contenido Redes'],['completado',`<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="url(#gi6)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><defs><linearGradient id="gi6" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#8fb8ff"/></linearGradient></defs><path d="M4 22V4M4 4h13l-2 4 2 4H4"/></svg>`,'Completado']];
 
 const hoyD=new Date();
-let calY=hoyD.getFullYear(), calM=hoyD.getMonth();
+let calY=hoyD.getFullYear(), calM=hoyD.getMonth(), calG='Todos';
 const ymd=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 const mon=(()=>{const d=new Date(hoyD);d.setDate(d.getDate()-((d.getDay()+6)%7));return ymd(d)})();
 const sun=(()=>{const d=new Date(mon+'T12:00:00');d.setDate(d.getDate()+6);return ymd(d)})();
@@ -654,25 +656,29 @@ function calHtml(){
   const first=new Date(calY,calM,1), off=(first.getDay()+6)%7, days=new Date(calY,calM+1,0).getDate();
   let cells=['L','M','X','J','V','S','D'].map(d=>`<div class="hd">${d}</div>`).join('');
   for(let i=0;i<off;i++)cells+='<div></div>';
-  const rows=act();
+  /* filtro por grupo: solo aparecen los grupos que tienen tareas activas; si el elegido se queda sin tareas vuelve a Todos */
+  const grupos=[...new Set(act().map(o=>o.g).filter(Boolean))];
+  if(calG!=='Todos'&&!grupos.includes(calG))calG='Todos';
+  const rows=act().filter(o=>calG==='Todos'||o.g===calG);
+  const gcalV=calG==='Todos'?GCAL:[];
   for(let d=1;d<=days;d++){
     const key=calY+'-'+String(calM+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
     const ch=rows.filter(o=>(o.di||'').slice(0,10)===key).map(o=>`<span class="chip" data-open="${o.id}" style="--c:${ccol(o)};background:${ccol(o)}22;border-left:3px solid ${ccol(o)}">${ticon(o)}${esc(String(o.t||'Sin título').replace(/^\s*(⏩|📤|⚪)\s*/,''))}</span>`).join('')
       +rows.filter(o=>(o.pu||'').slice(0,10)===key).map(o=>`<span class="chip pub" data-open="${o.id}" style="--c:#0f7b6c;background:#e7f6ec">🚀 ${esc(o.t||'')}</span>`).join('');
     /* móvil: un punto de color por cada cosa del día (tareas, publicaciones, eventos de Google); en PC se ven los chips */
-    const dots=[...rows.filter(o=>(o.di||'').slice(0,10)===key).map(o=>ccol(o)),...rows.filter(o=>(o.pu||'').slice(0,10)===key).map(()=>'#0f7b6c'),...GCAL.filter(e=>e.d===key).map(()=>'#9b9a97')];
+    const dots=[...rows.filter(o=>(o.di||'').slice(0,10)===key).map(o=>ccol(o)),...rows.filter(o=>(o.pu||'').slice(0,10)===key).map(()=>'#0f7b6c'),...gcalV.filter(e=>e.d===key).map(()=>'#9b9a97')];
     const dotsHtml=`<div class="dots">${dots.slice(0,3).map(c=>`<i style="background:${c}"></i>`).join('')}${dots.length>3?'<i class="more"></i>':''}</div>`;
-    cells+=`<div class="dc${key===selDay?' sel':''}" data-selday="${key}"><div class="num">${d}</div>${ch}${GCAL.filter(e=>e.d===key).map(e=>`<span class="chip gcal" style="--c:#bdbcb8;background:#f1f0ee;border-left:3px dashed #bdbcb8;color:#8a8880">${esc(e.t)}</span>`).join('')}${dotsHtml}</div>`;
+    cells+=`<div class="dc${key===selDay?' sel':''}" data-selday="${key}"><div class="num">${d}</div>${ch}${gcalV.filter(e=>e.d===key).map(e=>`<span class="chip gcal" style="--c:#bdbcb8;background:#f1f0ee;border-left:3px dashed #bdbcb8;color:#8a8880">${esc(e.t)}</span>`).join('')}${dotsHtml}</div>`;
   }
   const nombre=new Date(calY,calM,1).toLocaleDateString('es-ES',{month:'long',year:'numeric'});
-  return `<h1>📆 Calendario</h1><div class="sub"><button class="btn" data-month="-1">‹</button><b style="color:inherit">${esc(nombre.charAt(0).toUpperCase()+nombre.slice(1).replace(' De ',' de '))}</b><button class="btn" data-month="1">›</button><span>· pulsa un día para crear una tarea</span></div><div class="cal">${cells}</div>${agendaHtml()}`;
+  return `<h1>📆 Calendario</h1><div class="sub"><button class="btn" data-month="-1">‹</button><b style="color:inherit">${esc(nombre.charAt(0).toUpperCase()+nombre.slice(1).replace(' De ',' de '))}</b><button class="btn" data-month="1">›</button><span>· pulsa un día para crear una tarea</span></div><div class="calfil"><button class="btn${calG==='Todos'?' on':''}" data-calg="Todos">Todos</button>${grupos.map(g=>`<button class="btn${calG===g?' on':''}" data-calg="${esc(g)}"><span class="dot" style="background:${gc(g)}"></span>${esc(gLabel(g))}</button>`).join('')}</div><div class="cal">${cells}</div>${agendaHtml()}`;
 }
 
 function agendaHtml(){
   if(!selDay)return '<p class="mut" style="margin-top:14px">Toca un día para ver sus tareas.</p>';
-  const list=act().filter(o=>(o.di||'').slice(0,10)===selDay).sort((a,b)=>(a.fr||'').localeCompare(b.fr||''));
+  const list=act().filter(o=>(o.di||'').slice(0,10)===selDay&&(calG==='Todos'||o.g===calG)).sort((a,b)=>(a.fr||'').localeCompare(b.fr||''));
   const d=new Date(selDay+'T12:00:00');
-  const _dl=d.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'});return `<div class="grp" style="margin-top:18px">${(_dl.charAt(0).toUpperCase()+_dl.slice(1)).replace(' De ',' de ')} <button class="btn" style="margin-left:auto" data-newday="${selDay}">＋ tarea</button></div>`+GCAL.filter(e=>e.d===selDay).map(e=>`<div class="gev" style="margin-top:8px">📅 ${esc(e.t)} <span>${esc(e.h)}</span></div>`).join('')+(list.map(o=>card(o)).join('')||'<p class="mut">Nada este día.</p>');
+  const _dl=d.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'});return `<div class="grp" style="margin-top:18px">${(_dl.charAt(0).toUpperCase()+_dl.slice(1)).replace(' De ',' de ')} <button class="btn" style="margin-left:auto" data-newday="${selDay}">＋ tarea</button></div>`+(calG==='Todos'?GCAL:[]).filter(e=>e.d===selDay).map(e=>`<div class="gev" style="margin-top:8px">📅 ${esc(e.t)} <span>${esc(e.h)}</span></div>`).join('')+(list.map(o=>card(o)).join('')||'<p class="mut">Nada este día.</p>');
 }
 function redesHtml(){
   const redes=S.filter(o=>o.g==='Redes'&&(!o.h||o.pr==='Subido'));
@@ -797,7 +803,7 @@ function almacenamientoKB(){
   try{for(let k=0;k<localStorage.length;k++){const key=localStorage.key(k);bytes+=(key.length+(localStorage.getItem(key)||'').length)*2}}catch(e){}
   return bytes/1024;
 }
-const APP_VER='v-cal-1';
+const APP_VER='v-cal-2';
 function ajustesHtml(){
   const perf=perfilCfg();
   const kb=almacenamientoKB(), cuota=5*1024, libre=Math.max(0,cuota-kb), pctU=Math.max(0,Math.min(100,Math.round(kb/cuota*100)));
@@ -1036,7 +1042,7 @@ function novo(extra){
 }
 
 document.addEventListener('click',e=>{
-  const t=e.target.closest('[data-open],[data-sec],[data-rv],[data-toggle-ideas],[data-theme],[data-fmt],[data-fmtcancel],[data-pu-save],[data-pu-cancel],[data-new],[data-newg],[data-newday],[data-selday],[data-back],[data-del],[data-month]');
+  const t=e.target.closest('[data-open],[data-sec],[data-rv],[data-toggle-ideas],[data-theme],[data-fmt],[data-fmtcancel],[data-pu-save],[data-pu-cancel],[data-new],[data-newg],[data-newday],[data-selday],[data-back],[data-del],[data-month],[data-calg]');
   if(!t)return;
   const d=t.dataset;
   if('open' in d){page=d.open;return render()}
@@ -1050,6 +1056,7 @@ document.addEventListener('click',e=>{
   if('puCancel' in d){askPu=null;return render()}
   if('back' in d){page=null;return render()}
   if('del' in d){const di=S.find(x=>x.id===d.del);if(!confirmBorrar(di?di.t:'esta tarea'))return;S=S.filter(x=>x.id!==d.del);page=null;persist();return render()}
+  if('calg' in d){calG=d.calg;return render()}
   if('month' in d){calM+=+d.month;if(calM<0){calM=11;calY--}if(calM>11){calM=0;calY++}return render()}
   if('selday' in d){selDay=d.selday;return render()}
   if('newday' in d)return startWiz({di:d.newday});
