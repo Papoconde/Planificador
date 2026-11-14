@@ -448,8 +448,8 @@ body.dark .wdlg .sumrow{background:#2a2a2a}
 .swwrap{position:relative}
 .wkday.hot{outline:2px solid #8fb8ff;outline-offset:-2px}
 .wkday.hot{outline:2px solid #8fb8ff}
-@keyframes wdWig{0%,100%{transform:scale(1.035) rotate(0);outline-color:rgba(143,184,255,.5)}25%{transform:scale(1.035) rotate(-1.4deg);outline-color:#8fb8ff}75%{transform:scale(1.035) rotate(1.4deg);outline-color:#8fb8ff}}
-.item.lift[data-wdrag]{outline:2px solid #8fb8ff;outline-offset:2px;animation:wdWig .42s ease-in-out infinite}
+@keyframes wdWig{0%,100%{transform:translateX(0) scale(1.02)}20%{transform:translateX(-1.5px) scale(1.02)}40%{transform:translateX(1.5px) scale(1.02)}60%{transform:translateX(-1px) scale(1.02)}80%{transform:translateX(1px) scale(1.02)}}
+.item.lift[data-wdrag]{outline:2px solid #8fb8ff;outline-offset:2px;animation:wdWig .5s ease-in-out infinite}
 .item,.trow.wk{user-select:none;-webkit-user-select:none}
 .swbg{position:absolute;left:0;top:0;bottom:0;width:124px;background:#0f7b6c;color:#fff;border-radius:999px;display:flex;align-items:center;justify-content:center;gap:6px;overflow:hidden;white-space:nowrap;font-weight:600;font-size:14px;pointer-events:none;z-index:0}
 .swbg>span{flex-shrink:0}
