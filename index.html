@@ -868,7 +868,7 @@ function almacenamientoKB(){
   try{for(let k=0;k<localStorage.length;k++){const key=localStorage.key(k);bytes+=(key.length+(localStorage.getItem(key)||'').length)*2}}catch(e){}
   return bytes/1024;
 }
-const APP_VER='v-cal-9';
+const APP_VER='v-wiz-1';
 function ajustesHtml(){
   const perf=perfilCfg();
   const kb=almacenamientoKB(), cuota=5*1024, libre=Math.max(0,cuota-kb), pctU=Math.max(0,Math.min(100,Math.round(kb/cuota*100)));
@@ -1284,7 +1284,7 @@ function renderWiz(){
   else if(k==='fr')ctl=frCtl(o,'w');
   else if(p.type==='area'||p.type==='pagina')ctl=`<textarea class="wtxt" rows="4" data-wkey="${k}">${esc(o[k]||'')}</textarea>`;
   else if(p.type==='date')ctl=`<input type="date" class="wtxt" data-wkey="${k}" min="${new Date().getFullYear()}-01-01" max="${new Date().getFullYear()+1}-12-31" value="${esc((o[k]||'').slice(0,10))}">`;
-  else ctl=`<input type="text" class="wtxt" data-wkey="${k}" value="${esc(o[k]||'')}" placeholder="Escribe aquí...">`;
+  else ctl=`<input type="text" class="wtxt" enterkeyhint="next" data-wkey="${k}" value="${esc(o[k]||'')}" placeholder="Escribe aquí...">`;
   const _p1=Math.round(wiz.i/ks.length*100), _p0=wiz.shown??0; wiz.shown=_p1;
   document.body.insertAdjacentHTML('beforeend',`<div class="ov" id="wiz"><div class="wdlg">
     <button class="wx" data-wcancel>✕</button>
@@ -1300,7 +1300,7 @@ function renderWiz(){
       </div>
     </div></div></div>`);
   {const _e=document.getElementById('wiz');if(_e)_e.innerHTML=noEmo(_e.innerHTML);}
-  const inp=document.querySelector('#wiz [data-wkey]');if(inp&&p.type!=='sel')inp.focus();
+  const inp=document.querySelector('#wiz [data-wkey]');if(inp&&p.type!=='sel'&&!wizNoFoco)inp.focus();wizNoFoco=false;
 }
 document.addEventListener('click',e=>{
   const b=e.target.closest('[data-wopt],[data-wnext],[data-wback],[data-wskip],[data-wcancel],[data-wcreate],[data-wstart],[data-voice]');
@@ -1317,7 +1317,9 @@ document.addEventListener('click',e=>{
   if('wnext' in d){const k=wizKeys()[wiz.i];const o=wiz.o;if(k==='g'&&!o.g)return;if(k==='t'&&!(o.t||'').trim())return;wiz.i++;return renderWiz()}
 });
 document.addEventListener('input',e=>{const t=e.target;if(wiz&&'wkey' in t.dataset)wiz.o[t.dataset.wkey]=t.value});
-document.addEventListener('keydown',e=>{if(wiz&&e.key==='Enter'&&e.target.tagName==='INPUT'&&'wkey' in e.target.dataset){e.preventDefault();const n=document.querySelector('#wiz [data-wnext]');if(n)n.click()}});
+/* Enter en un campo del asistente: cierra el teclado y pasa al siguiente paso sin volver a abrirlo */
+let wizNoFoco=false;
+document.addEventListener('keydown',e=>{if(wiz&&e.key==='Enter'&&e.target.tagName==='INPUT'&&'wkey' in e.target.dataset){e.preventDefault();wizNoFoco=true;e.target.blur();const n=document.querySelector('#wiz [data-wnext]');if(n)n.click()}});
 let tdrag=null;
 function clearDropHL(){document.querySelectorAll('[data-drop]').forEach(c=>c.classList.remove('hot'))}
 document.addEventListener('pointerdown',e=>{if(e.pointerType!=='touch')return;const el=e.target.closest('[data-drag]');if(el){tdrag={id:el.dataset.drag,x:e.clientX,y:e.clientY,on:false,el};tdrag.t=setTimeout(()=>{el.classList.add('lift');wdGhostOn(el,tdrag.x,tdrag.y)},200)}});
