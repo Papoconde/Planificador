@@ -936,7 +936,9 @@ function render(){
   if(page&&!o)page=null;
   document.body.classList.toggle('dark',dark);
   document.getElementById('themeBtn').innerHTML=noEmo(`<span class="ico">${dark?'☀️':'🌙'}</span><span class="lbl"> ${dark?'Claro':'Oscuro'}</span>`);
+  const _liftId=(typeof wdT!=='undefined'&&wdT&&wdT.lift)?wdT.id:null;
   document.getElementById('main').innerHTML=noEmo(o?pageHtml2(o):secHtml());
+  if(_liftId){const _n=document.querySelector(`[data-wdrag="${_liftId}"]`);if(_n&&wdT){_n.classList.add('lift');document.body.classList.add('wdl');wdT.el=_n}}
   if(askId){const a=S.find(x=>x.id===askId);if(a)document.getElementById('main').insertAdjacentHTML('beforeend',`<div class="ov"><div class="dlg2"><h3>¿Es carrusel o reel?</h3><p class="mut">“${esc(a.t||'Sin título')}” pasa a Por grabar</p><div class="fmtbtns"><button class="fmtb" data-fmt="Reel">${ico('clap',20)} Reel</button><button class="fmtb" data-fmt="Carrusel">${ico('image',20)} Carrusel</button></div><button class="btn" data-fmtcancel style="margin-top:12px">Ahora no</button></div></div>`)}
   if(o){const el=document.getElementById('ptitle');if(el&&!el.value)el.focus()}
   moveSeg(compG);
