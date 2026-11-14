@@ -448,8 +448,8 @@ body.dark .wdlg .sumrow{background:#2a2a2a}
 .swwrap{position:relative}
 .wkday.hot{outline:2px solid #8fb8ff;outline-offset:-2px}
 .wkday.hot{outline:2px solid #8fb8ff}
-@keyframes wdWig{0%,100%{transform:translateX(0) scale(1.02)}20%{transform:translateX(-1.5px) scale(1.02)}40%{transform:translateX(1.5px) scale(1.02)}60%{transform:translateX(-1px) scale(1.02)}80%{transform:translateX(1px) scale(1.02)}}
-.item.lift[data-wdrag]{outline:2px solid #8fb8ff;outline-offset:2px;animation:wdWig .5s ease-in-out infinite}
+.item.lift[data-wdrag]{outline:2px solid #8fb8ff;outline-offset:2px;position:relative;z-index:2}
+body.wdl .item[data-wdrag]:not(.lift){opacity:.35;transition:opacity .15s}
 .item,.trow.wk{user-select:none;-webkit-user-select:none}
 .swbg{position:absolute;left:0;top:0;bottom:0;width:124px;background:#0f7b6c;color:#fff;border-radius:999px;display:flex;align-items:center;justify-content:center;gap:6px;overflow:hidden;white-space:nowrap;font-weight:600;font-size:14px;pointer-events:none;z-index:0}
 .swbg>span{flex-shrink:0}
@@ -895,7 +895,7 @@ document.addEventListener('pointerdown',e=>{
   if(e.pointerType==='mouse'&&e.button!==0)return;
   const id=el.dataset.wdrag;
   wdT={id,el,x:e.clientX,y:e.clientY,on:false,lift:false,day:null,t:null};
-  wdT.t=setTimeout(()=>{if(wdT&&wdT.id===id){wdT.lift=true;el.classList.add('lift')}},200);
+  wdT.t=setTimeout(()=>{if(wdT&&wdT.id===id){wdT.lift=true;el.classList.add('lift');document.body.classList.add('wdl')}},200);
 },{passive:true});
 document.addEventListener('pointermove',e=>{
   if(!wdT)return;
@@ -908,7 +908,7 @@ document.addEventListener('pointermove',e=>{
 },{passive:true});
 function wdEnd(e){
   if(!wdT)return;const w=wdT;wdT=null;clearTimeout(w.t);if(w.lift)window.__swBlock=Date.now();
-  w.el.classList.remove('lift');w.el.style.opacity='';
+  w.el.classList.remove('lift');w.el.style.opacity='';document.body.classList.remove('wdl');
   document.querySelectorAll('.wkday.hot').forEach(x=>x.classList.remove('hot'));
   if(!w.on)return;
   const d=document.elementFromPoint(e.clientX,e.clientY)?.closest('.wkday[data-day]');
@@ -918,7 +918,7 @@ function wdEnd(e){
 }
 document.addEventListener('touchmove',e=>{if(wdT&&wdT.lift&&e.cancelable)e.preventDefault()},{passive:false});
 document.addEventListener('pointerup',wdEnd);
-document.addEventListener('pointercancel',()=>{if(wdT){clearTimeout(wdT.t);wdT.el.classList.remove('lift');wdT.el.style.opacity='';wdT=null}document.querySelectorAll('.wkday.hot').forEach(x=>x.classList.remove('hot'))});
+document.addEventListener('pointercancel',()=>{if(wdT){clearTimeout(wdT.t);wdT.el.classList.remove('lift');wdT.el.style.opacity='';document.body.classList.remove('wdl');wdT=null}document.querySelectorAll('.wkday.hot').forEach(x=>x.classList.remove('hot'))});
 function confirmBorrar(t){
   const n=(t||'esta tarea').trim();
   return confirm(`Vas a borrar «${n}».\n\nEsto ya no se puede recuperar: se quita de tu planificador y de la nube.\n\n¿Seguro que quieres borrarla?`);
