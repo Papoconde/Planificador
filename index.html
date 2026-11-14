@@ -522,6 +522,7 @@ function persist(){
 }
 function saveSoon(){clearTimeout(tm);tm=setTimeout(persist,400)}
 const act=()=>S.filter(o=>!o.h);
+const gLabel=g=>g==='Universidad'?'Uni':(g||'Sin grupo');
 const gc=g=>GC[g]||'#9b9a97';
 const ACOL={'Inglés':'#e53935','Proyecto I':'#1e63d6','Infografía':'#9334e6','Diseño crítico':'#3d9e2e','Cultura visual':'#f2b705'};
 const GCAL=[{d:'2026-11-14',t:'Bermu con Jorge y Gon',h:'12:00–13:00'},{d:'2026-11-20',t:'Curso novios',h:'21:35–22:35'},{d:'2026-12-09',t:'Cumple Yerko',h:'Todo el día'}];
@@ -552,7 +553,7 @@ function card(o,hora){
   return `<div class="item ${o.h?'done':''}" ${hora?`data-wdrag="${o.id}"`:''} style="${strip}align-items:center">
     ${o.h?`<input type="checkbox" data-h="${o.id}" checked>`:''}${badge}
     <div style="flex:1;min-width:0"><a class="tt" data-open="${o.id}">${ticon(o)}${esc(String(o.t||'Sin título').replace(/^\s*(⏩|📤|⚪)\s*/,''))}</a>
-    <div class="meta"><span class="pill gtag" style="background:${gc(o.g)}26;color:${gc(o.g)};font-weight:700">● ${esc(o.g||'Sin grupo')}</span>${o.a?`<span class="pill">${esc(o.a)}</span>`:''}${ppill(o)}${o.pr?`<span class="pill" style="background:${PRC[o.pr]||'#efefed'}22">${esc(o.pr)}</span>`:''}${hora&&o.fr?`<span class="pill">🕒 ${esc(o.fr)}</span>`:''}</div></div></div>`;
+    <div class="meta"><span class="pill gtag" style="background:rgba(127,127,127,.16);color:#c9c7c1;font-weight:600"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${gc(o.g)};margin-right:5px"></span>${esc(gLabel(o.g))}</span>${o.a?`<span class="pill">${esc(o.a)}</span>`:''}${ppill(o)}${o.pr?`<span class="pill" style="background:${PRC[o.pr]||'#efefed'}22">${esc(o.pr)}</span>`:''}${hora&&o.fr?`<span class="pill">🕒 ${esc(o.fr)}</span>`:''}</div></div></div>`;
 }
 function redCard(o){
   return `<div class="item ${o.h?'done':''}" style="border-left:4px solid ${PRC[o.pr]||'#c8c7c3'};display:block">
@@ -620,7 +621,7 @@ function todoHtml(){
     statsHtml+(rows.length?'':'<p class="mut">No hay tareas con este filtro.</p>')+grupos.map(g=>{
       const list=rows.filter(o=>(o.g||'')===g).sort((a,b)=>(prioScore(b)-prioScore(a))||byFl(a,b));
       if(!list.length)return '';
-      return `<div class="grp"><span class="dot" style="background:${gc(g)}"></span>${g||'Sin grupo'} <span class="mut">${list.length}</span>
+      return `<div class="grp"><span class="dot" style="background:${gc(g)}"></span>${gLabel(g)} <span class="mut">${list.length}</span>
         <button class="btn" style="margin-left:auto" data-newg="${g}">＋ añadir</button></div>`+
         (list.map(o=>card(o)).join('')||'<p class="mut">Sin tareas.</p>');
     }).join('');
@@ -692,7 +693,7 @@ function completadoHtml(){
     let last='';
     body=sorted.map(o=>{const b=bucket((o.hAt||'').slice(0,10));const h=b!==last?`<div class="grp">${b}</div>`:'';last=b;return h+card(o)}).join('')||`<p class="mut">Todavía no hay tareas completadas${compG!=='__all'?` de ${esc(compG)}`:''}.</p>`;
   } else if(compG==='__all'){
-    body=[...Object.keys(GC),''].map(g=>{const rows=done.filter(o=>(o.g||'')===g).sort(byRecC);if(!rows.length)return '';return `<div class="grp"><span class="dot" style="background:${gc(g)}"></span>${g||'Sin grupo'} <span class="mut">${rows.length}</span></div>`+rows.map(o=>card(o)).join('')}).join('');
+    body=[...Object.keys(GC),''].map(g=>{const rows=done.filter(o=>(o.g||'')===g).sort(byRecC);if(!rows.length)return '';return `<div class="grp"><span class="dot" style="background:${gc(g)}"></span>${gLabel(g)} <span class="mut">${rows.length}</span></div>`+rows.map(o=>card(o)).join('')}).join('');
   } else {
     const rows=done.filter(o=>o.g===compG).sort(byRecC);
     body=rows.map(o=>card(o)).join('')||`<p class="mut">Todavía no hay tareas completadas de ${esc(compG)}.</p>`;
@@ -705,7 +706,7 @@ function completadoHtmlOld(){
     [...Object.keys(GC),''].map(g=>{
       const rows=done.filter(o=>(o.g||'')===g);
       if(!rows.length)return '';
-      return `<div class="grp"><span class="dot" style="background:${gc(g)}"></span>${g||'Sin grupo'} <span class="mut">${rows.length}</span></div>`+rows.map(o=>card(o)).join('');
+      return `<div class="grp"><span class="dot" style="background:${gc(g)}"></span>${gLabel(g)} <span class="mut">${rows.length}</span></div>`+rows.map(o=>card(o)).join('');
     }).join('');
 }
 
@@ -784,7 +785,7 @@ function ajustesHtml(){
     <div class="cardbox" style="display:grid;gap:10px"><div style="display:flex;justify-content:space-between;align-items:baseline"><b>Usado: ${txt}</b><span class="mut">de unos 5 MB</span></div><div style="height:16px;background:rgba(0,0,0,.35);border-radius:16px;overflow:hidden"><div style="height:100%;width:${Math.max(pctU,1)}%;border-radius:16px;background:linear-gradient(90deg,#2c4a75,#5f88c4)"></div></div><span class="mut" style="font-size:12px">Espacio que ocupa la app en este navegador. Los datos de la nube no se cuentan aquí.</span></div>`;
 }
 
-function cardDate(o){const d=new Date(o.fl.slice(0,10)+'T12:00:00');const mon=d.toLocaleDateString('es-ES',{month:'short'}).replace('.','');return `<div class="item ${o.h?'done':''}" style="border-left:4px solid ${ccol(o)};align-items:center">${o.h?`<input type="checkbox" data-h="${o.id}" checked>`:''}<div class="dbadge"><b>${d.getDate()}</b><span>${esc(mon)}</span></div><div style="flex:1;min-width:0"><a class="tt" data-open="${o.id}">${ticon(o)}${esc(String(o.t||'Sin título').replace(/^\s*(⏩|📤|⚪)\s*/,''))}</a><div class="meta"><span class="pill gtag" style="background:${gc(o.g)}26;color:${gc(o.g)};font-weight:700">● ${esc(o.g||'Sin grupo')}</span>${o.a?`<span class="pill">${esc(o.a)}</span>`:''}${ppill(o)}</div></div></div>`}
+function cardDate(o){const d=new Date(o.fl.slice(0,10)+'T12:00:00');const mon=d.toLocaleDateString('es-ES',{month:'short'}).replace('.','');return `<div class="item ${o.h?'done':''}" style="border-left:4px solid ${ccol(o)};align-items:center">${o.h?`<input type="checkbox" data-h="${o.id}" checked>`:''}<div class="dbadge"><b>${d.getDate()}</b><span>${esc(mon)}</span></div><div style="flex:1;min-width:0"><a class="tt" data-open="${o.id}">${ticon(o)}${esc(String(o.t||'Sin título').replace(/^\s*(⏩|📤|⚪)\s*/,''))}</a><div class="meta"><span class="pill gtag" style="background:rgba(127,127,127,.16);color:#c9c7c1;font-weight:600"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${gc(o.g)};margin-right:5px"></span>${esc(gLabel(o.g))}</span>${o.a?`<span class="pill">${esc(o.a)}</span>`:''}${ppill(o)}</div></div></div>`}
 function semanaTabla(){
   const dias=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
   const rows=act().filter(inWeek).map(o=>({o,v:(o.di||o.fl||'').slice(0,10)})).sort((a,b)=>a.v.localeCompare(b.v)||(a.o.fr||'').localeCompare(b.o.fr||''));
@@ -863,7 +864,7 @@ function pageHtml2(o){
     <div class="cover pcov" style="background:linear-gradient(120deg,${g},${g}66);height:70px"></div>
     <div class="picon" style="color:${g}">${ico}</div>
     <input id="ptitle" class="ptitle" data-pt="${o.id}" value="${esc(o.t)}" placeholder="Sin título">
-    <div class="pchips"><span class="pill" style="background:${g}22;color:${g}">${esc(o.g||'Sin grupo')}</span>${chips}${o.h?'<span class="pill">✅ Hecha</span>':''}</div>
+    <div class="pchips"><span class="pill" style="background:${g}22;color:${g}">${esc(gLabel(o.g))}</span>${chips}${o.h?'<span class="pill">✅ Hecha</span>':''}</div>
     ${o.tr?`<div class="pdesc box">${o.d?esc(o.d):'<span class="mut">Pendiente de resumir…</span>'}<details class="ptr"><summary>Transcripción completa</summary><div>${esc(o.tr)}</div></details></div>`:o.d?`<div class="pdesc">${esc(o.d)}</div>`:''}
     ${pEdit?`<div class="pgrid">${props}</div>`:''}
     <textarea class="pbody" data-pf="cu" data-pid="${o.id}" placeholder="Escribe aquí...">${esc(o.cu)}</textarea>
