@@ -512,6 +512,7 @@ body.dark .qsearch{background:#232323;border-color:#333;color:#e8e6e1}
   .dots i{width:7px;height:7px;border-radius:50%;display:block}
 .dots .dg{display:inline-flex;flex-direction:column;align-items:center;gap:2px}
 .dots b{font-size:9px;line-height:1;font-weight:700;opacity:.85}
+.dots i.ev{background:transparent!important;box-shadow:inset 0 0 0 1.5px #b3b2ae}
 .dots b.mx{opacity:.7}
   .dots i.more{background:transparent;box-shadow:inset 0 0 0 1.5px #9b9a97;width:5px;height:5px}
 }
@@ -726,12 +727,12 @@ function calHtml(){
     const ch=ent.map(({o,pub})=>pub?`<span class="chip pub" data-open="${o.id}" style="--c:${gc('Redes')};background:#fde7f2">🚀${esc(o.t||'')}</span>`:`<span class="chip" data-open="${o.id}" style="--c:${ccol(o)};background:${ccol(o)}22;border-left:3px solid ${ccol(o)}">${ticon(o)}${esc(String(o.t||'Sin título').replace(/^\s*(⏩|📤|⚪)\s*/,''))}</span>`).join('');
     /* móvil: un punto por tarea; si el día llega a 4 puntos se juntan los del mismo color y el número va debajo */
     const pts=ent.map(({o,pub})=>pub?gc('Redes'):ccol(o));
-    gcalV.filter(e=>e.d===key).forEach(()=>pts.push('rgba(155,154,151,.45)'));
+    gcalV.filter(e=>e.d===key).forEach(()=>pts.push('EV'));
     const junta=pts.length>=4;
     const cols=new Map();
     pts.forEach(c=>cols.set(c,(cols.get(c)||0)+1));
     const grp=junta?[...cols.entries()]:pts.map(c=>[c,1]);
-    const dotsHtml=`<div class="dots">${grp.slice(0,3).map(([c,n])=>`<span class="dg"><i style="background:${c}"></i>${junta&&n>1?`<b>${n}</b>`:''}</span>`).join('')}${grp.length>3?`<b class="mx">+${grp.length-3}</b>`:''}</div>`;
+    const dotsHtml=`<div class="dots">${grp.slice(0,3).map(([c,n])=>`<span class="dg"><i ${c==='EV'?'class="ev"':`style="background:${c}"`}></i>${junta&&n>1?`<b>${n}</b>`:''}</span>`).join('')}${grp.length>3?`<b class="mx">+${grp.length-3}</b>`:''}</div>`;
     cells+=`<div class="dc${key===selDay?' sel':''}" data-selday="${key}"><div class="num">${d}</div>${ch}${gcalV.filter(e=>e.d===key).map(e=>`<span class="chip gcal" style="--c:#bdbcb8;background:#f1f0ee;border-left:3px dashed #bdbcb8;color:#8a8880">${esc(e.t)}</span>`).join('')}${dotsHtml}</div>`;
   }
   const nombre=new Date(calY,calM,1).toLocaleDateString('es-ES',{month:'long',year:'numeric'});
@@ -867,7 +868,7 @@ function almacenamientoKB(){
   try{for(let k=0;k<localStorage.length;k++){const key=localStorage.key(k);bytes+=(key.length+(localStorage.getItem(key)||'').length)*2}}catch(e){}
   return bytes/1024;
 }
-const APP_VER='v-cal-7';
+const APP_VER='v-cal-8';
 function ajustesHtml(){
   const perf=perfilCfg();
   const kb=almacenamientoKB(), cuota=5*1024, libre=Math.max(0,cuota-kb), pctU=Math.max(0,Math.min(100,Math.round(kb/cuota*100)));
