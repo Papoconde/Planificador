@@ -448,6 +448,8 @@ body.dark .wdlg .sumrow{background:#2a2a2a}
 .swwrap{position:relative}
 .wkday.hot{outline:2px solid #8fb8ff;outline-offset:-2px}
 .wkday.hot{outline:2px solid #8fb8ff}
+@keyframes wdWig{0%,100%{transform:scale(1.035) rotate(0)}25%{transform:scale(1.035) rotate(-1.4deg)}75%{transform:scale(1.035) rotate(1.4deg)}}
+.item.lift[data-wdrag]{animation:wdWig .42s ease-in-out infinite}
 .item,.trow.wk{user-select:none;-webkit-user-select:none}
 .swbg{position:absolute;left:0;top:0;bottom:0;width:124px;background:#0f7b6c;color:#fff;border-radius:999px;display:flex;align-items:center;justify-content:center;gap:6px;overflow:hidden;white-space:nowrap;font-weight:600;font-size:14px;pointer-events:none;z-index:0}
 .swbg>span{flex-shrink:0}
