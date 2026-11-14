@@ -453,6 +453,11 @@ body.dark .wdlg .sumrow{background:#2a2a2a}
 .swwrap>.item{position:relative;z-index:1}
 .swtoast{position:fixed;left:12px;right:12px;bottom:calc(96px + env(safe-area-inset-bottom));z-index:30;background:#262626;color:#fff;border-radius:14px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 8px 24px rgba(0,0,0,.4);font-size:14px}
 .swtoast button{background:none;border:0;color:#8fb8ff;font:inherit;font-weight:600;cursor:pointer}
+/* calendario PC: columnas iguales, chips legibles en oscuro */
+@media(min-width:701px){.cal{grid-template-columns:repeat(7,minmax(0,1fr))}.dc .chip{max-width:100%}}
+body.dark .chip.gcal{background:#2a2a2a!important;color:#b5b3ad!important;border-left:3px dashed #6b6a66!important}
+/* calendario móvil: el icono de tipo se ve en lugar del punto */
+@media(max-width:700px){.dc .chip:has(svg){width:auto!important;height:auto!important;font-size:0!important;background:none!important;border:0!important;padding:0 1px!important;display:inline-flex!important;align-items:center;margin:2px 1px 0!important;color:var(--c,#8a8880)}.dc .chip svg{width:14px!important;height:14px!important;flex-shrink:0}}
 </style>
 </head>
 <body>
@@ -517,7 +522,7 @@ const GCAL=[{d:'2026-11-14',t:'Bermu con Jorge y Gon',h:'12:00–13:00'},{d:'202
 const PCOL={Alta:'#d44c47',Media:'#d9a20f',Baja:'#8a8880'};
 const ppill=o=>o.p?`<span title="${esc(o.p)}" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${PCOL[o.p]};margin-left:4px;vertical-align:middle;align-self:center"></span>`:'';
 const ccol=o=>o.g==='Universidad'&&ACOL[o.a]?ACOL[o.a]:gc(o.g);
-const ticon=o=>o.g!=='Universidad'?'':o.ty==='⏩ Adelanto'?'⏩ ':o.ty==='Entrega'?'📤 ':o.ty==='Opcional'?'⚪ ':'';
+const ticon=(o,z)=>{if(o.g!=='Universidad')return '';const n=o.ty==='⏩ Adelanto'?'fwd':o.ty==='Entrega'?'upload':o.ty==='Opcional'?'opt':'';return n?ico(n,z||14)+' ':''};
 function inWeek(o){return [o.di,o.fl].some(x=>x&&x.slice(0,10)>=mon&&x.slice(0,10)<=sun)}
 const byFl=(a,b)=>(a.fl||'9999').localeCompare(b.fl||'9999');
 
@@ -627,14 +632,14 @@ function calHtml(){
     cells+=`<div class="dc${key===selDay?' sel':''}" data-selday="${key}"><div class="num">${d}</div>${ch}${GCAL.filter(e=>e.d===key).map(e=>`<span class="chip gcal" style="--c:#bdbcb8;background:#f1f0ee;border-left:3px dashed #bdbcb8;color:#8a8880">${esc(e.t)}</span>`).join('')}</div>`;
   }
   const nombre=new Date(calY,calM,1).toLocaleDateString('es-ES',{month:'long',year:'numeric'});
-  return `<h1>📆 Calendario</h1><div class="sub"><button class="btn" data-month="-1">‹</button><b style="text-transform:capitalize;color:#37352f">${esc(nombre)}</b><button class="btn" data-month="1">›</button><span>· pulsa un día para crear una tarea</span></div><div class="cal">${cells}</div>${agendaHtml()}`;
+  return `<h1>📆 Calendario</h1><div class="sub"><button class="btn" data-month="-1">‹</button><b style="color:inherit">${esc(nombre.charAt(0).toUpperCase()+nombre.slice(1).replace(' De ',' de '))}</b><button class="btn" data-month="1">›</button><span>· pulsa un día para crear una tarea</span></div><div class="cal">${cells}</div>${agendaHtml()}`;
 }
 
 function agendaHtml(){
   if(!selDay)return '<p class="mut" style="margin-top:14px">Toca un día para ver sus tareas.</p>';
   const list=act().filter(o=>(o.di||'').slice(0,10)===selDay).sort((a,b)=>(a.fr||'').localeCompare(b.fr||''));
   const d=new Date(selDay+'T12:00:00');
-  return `<div class="grp" style="margin-top:18px;text-transform:capitalize">${d.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'})} <button class="btn" style="margin-left:auto" data-newday="${selDay}">＋ tarea</button></div>`+GCAL.filter(e=>e.d===selDay).map(e=>`<div class="gev" style="margin-top:8px">📅 ${esc(e.t)} <span>${esc(e.h)}</span></div>`).join('')+(list.map(o=>card(o)).join('')||'<p class="mut">Nada este día.</p>');
+  const _dl=d.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'});return `<div class="grp" style="margin-top:18px">${(_dl.charAt(0).toUpperCase()+_dl.slice(1)).replace(' De ',' de ')} <button class="btn" style="margin-left:auto" data-newday="${selDay}">＋ tarea</button></div>`+GCAL.filter(e=>e.d===selDay).map(e=>`<div class="gev" style="margin-top:8px">📅 ${esc(e.t)} <span>${esc(e.h)}</span></div>`).join('')+(list.map(o=>card(o)).join('')||'<p class="mut">Nada este día.</p>');
 }
 function redesHtml(){
   const redes=S.filter(o=>o.g==='Redes'&&(!o.h||o.pr==='Subido'));
