@@ -546,7 +546,7 @@ function card(o,hora){
   return `<div class="item ${o.h?'done':''}" style="${strip}align-items:center">
     ${o.h?`<input type="checkbox" data-h="${o.id}" checked>`:''}${badge}
     <div style="flex:1;min-width:0"><a class="tt" data-open="${o.id}">${ticon(o)}${esc(String(o.t||'Sin título').replace(/^\s*(⏩|📤|⚪)\s*/,''))}</a>
-    <div class="meta">${o.a?`<span class="pill">${esc(o.a)}</span>`:''}${ppill(o)}${o.pr?`<span class="pill" style="background:${PRC[o.pr]||'#efefed'}22">${esc(o.pr)}</span>`:''}${hora&&o.fr?`<span class="pill">🕒 ${esc(o.fr)}</span>`:''}</div></div></div>`;
+    <div class="meta"><span class="pill gtag" style="background:${gc(o.g)}26;color:${gc(o.g)};font-weight:700">● ${esc(o.g||'Sin grupo')}</span>${o.a?`<span class="pill">${esc(o.a)}</span>`:''}${ppill(o)}${o.pr?`<span class="pill" style="background:${PRC[o.pr]||'#efefed'}22">${esc(o.pr)}</span>`:''}${hora&&o.fr?`<span class="pill">🕒 ${esc(o.fr)}</span>`:''}</div></div></div>`;
 }
 function redCard(o){
   return `<div class="item ${o.h?'done':''}" style="border-left:4px solid ${PRC[o.pr]||'#c8c7c3'};display:block">
@@ -778,7 +778,7 @@ function ajustesHtml(){
     <div class="cardbox" style="display:grid;gap:10px"><div style="display:flex;justify-content:space-between;align-items:baseline"><b>Usado: ${txt}</b><span class="mut">de unos 5 MB</span></div><div style="height:16px;background:rgba(0,0,0,.35);border-radius:16px;overflow:hidden"><div style="height:100%;width:${Math.max(pctU,1)}%;border-radius:16px;background:linear-gradient(90deg,#2c4a75,#5f88c4)"></div></div><span class="mut" style="font-size:12px">Espacio que ocupa la app en este navegador. Los datos de la nube no se cuentan aquí.</span></div>`;
 }
 
-function cardDate(o){const d=new Date(o.fl.slice(0,10)+'T12:00:00');const mon=d.toLocaleDateString('es-ES',{month:'short'}).replace('.','');return `<div class="item ${o.h?'done':''}" style="border-left:4px solid ${ccol(o)};align-items:center">${o.h?`<input type="checkbox" data-h="${o.id}" checked>`:''}<div class="dbadge"><b>${d.getDate()}</b><span>${esc(mon)}</span></div><div style="flex:1;min-width:0"><a class="tt" data-open="${o.id}">${ticon(o)}${esc(String(o.t||'Sin título').replace(/^\s*(⏩|📤|⚪)\s*/,''))}</a><div class="meta">${o.a?`<span class="pill">${esc(o.a)}</span>`:''}${ppill(o)}</div></div></div>`}
+function cardDate(o){const d=new Date(o.fl.slice(0,10)+'T12:00:00');const mon=d.toLocaleDateString('es-ES',{month:'short'}).replace('.','');return `<div class="item ${o.h?'done':''}" style="border-left:4px solid ${ccol(o)};align-items:center">${o.h?`<input type="checkbox" data-h="${o.id}" checked>`:''}<div class="dbadge"><b>${d.getDate()}</b><span>${esc(mon)}</span></div><div style="flex:1;min-width:0"><a class="tt" data-open="${o.id}">${ticon(o)}${esc(String(o.t||'Sin título').replace(/^\s*(⏩|📤|⚪)\s*/,''))}</a><div class="meta"><span class="pill gtag" style="background:${gc(o.g)}26;color:${gc(o.g)};font-weight:700">● ${esc(o.g||'Sin grupo')}</span>${o.a?`<span class="pill">${esc(o.a)}</span>`:''}${ppill(o)}</div></div></div>`}
 function semanaTabla(){
   const dias=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
   const rows=act().filter(inWeek).map(o=>({o,v:(o.di||o.fl||'').slice(0,10)})).sort((a,b)=>a.v.localeCompare(b.v)||(a.o.fr||'').localeCompare(b.o.fr||''));
