@@ -476,12 +476,14 @@ body.dark .chip.gcal{background:#2a2a2a!important;color:#b5b3ad!important;border
 /* calendario móvil, estilo Calendario de iOS: número centrado (en círculo si es el día elegido) y puntos de color debajo */
 .dots{display:none}
 .calfil{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 12px}
-.qrow{display:flex;align-items:center;gap:8px;margin:-4px 0 14px}
+.hdrq{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.hdrq h1{margin:0}
+.qrow{display:flex;align-items:center;gap:8px;flex:0 0 auto;margin:0}
 .qbtn{width:36px;height:36px;padding:0;display:inline-flex;align-items:center;justify-content:center;border-radius:10px;border:1px solid #e6e5e1;background:#fff;color:inherit;cursor:pointer;flex:0 0 auto}
 .qbtn.on{background:#e8f0fe;border-color:#8fb8ff}
 body.dark .qbtn{background:#232323;border-color:#333}
 body.dark .qbtn.on{background:#1f2a3d;border-color:#8fb8ff}
-.qsearch{width:min(240px,62vw);box-sizing:border-box;padding:8px 12px;border-radius:10px;border:1px solid #e6e5e1;background:#fff;color:inherit;font:inherit;outline:none}
+.qsearch{width:min(200px,46vw);box-sizing:border-box;padding:8px 12px;border-radius:10px;border:1px solid #e6e5e1;background:#fff;color:inherit;font:inherit;outline:none}
 .qsearch:focus{border-color:#8fb8ff;box-shadow:0 0 0 3px rgba(143,184,255,.25)}
 body.dark .qsearch{background:#232323;border-color:#333;color:#e8e6e1}
 .calfil .btn .dot{width:8px;height:8px;margin-right:6px;display:inline-block;vertical-align:middle}
@@ -650,7 +652,7 @@ function statsTodo(){
 }
 function recienteHtml(){
   const rows=act().filter(o=>o.pr!=='Idea'&&filtGrupo(o)&&qOk(o,'todo')).reverse();
-  return `<h1>✅ To Do</h1><div class="sub">${rows.length} tareas · las últimas arriba</div>${qHtml('todo')}${todoSeg()}`+statsTodo()+(rows.map(o=>card(o)).join('')||'<p class="mut">No hay tareas con este filtro.</p>');
+  return `<div class="hdrq"><h1>✅ To Do</h1>${qHtml('todo')}</div><div class="sub">${rows.length} tareas · las últimas arriba</div>${todoSeg()}`+statsTodo()+(rows.map(o=>card(o)).join('')||'<p class="mut">No hay tareas con este filtro.</p>');
 }
 function todoHtml(){
   if(todoOrden==='reciente')return recienteHtml();
@@ -658,7 +660,7 @@ function todoHtml(){
   const grupos=[...Object.keys(GC),''];
   const stat=(n,l,c)=>`<div class="stat"><b style="color:${c}">${n}</b><span>${l}</span></div>`;
   const statsHtml=statsTodo();
-  return `<h1>✅ To Do</h1><div class="sub">Pendientes por grupo · ＋ añadir</div>${qHtml('todo')}${todoSeg()}`+
+  return `<div class="hdrq"><h1>✅ To Do</h1>${qHtml('todo')}</div><div class="sub">Pendientes por grupo · ＋ añadir</div>${todoSeg()}`+
     statsHtml+(rows.length?'':'<p class="mut">No hay tareas con este filtro.</p>')+grupos.map(g=>{
       const list=rows.filter(o=>(o.g||'')===g).sort((a,b)=>(prioScore(b)-prioScore(a))||byFl(a,b));
       if(!list.length)return '';
@@ -749,7 +751,7 @@ function completadoHtml(){
     const rows=done.filter(o=>o.g===compG).sort(byRecC);
     body=rows.map(o=>card(o)).join('')||`<p class="mut">Todavía no hay tareas completadas de ${esc(compG)}.</p>`;
   }
-  return `<h1>🏁 Completado</h1><div class="sub">${done.length} tareas hechas · desmarca una para devolverla a To Do</div>${qHtml('done')}${tabs}${periodos}${body}`;
+  return `<div class="hdrq"><h1>🏁 Completado</h1>${qHtml('done')}</div><div class="sub">${done.length} tareas hechas · desmarca una para devolverla a To Do</div>${tabs}${periodos}${body}`;
 }
 function completadoHtmlOld(){
   const done=S.filter(o=>o.h);
@@ -822,7 +824,7 @@ function almacenamientoKB(){
   try{for(let k=0;k<localStorage.length;k++){const key=localStorage.key(k);bytes+=(key.length+(localStorage.getItem(key)||'').length)*2}}catch(e){}
   return bytes/1024;
 }
-const APP_VER='v-cal-3';
+const APP_VER='v-search-3';
 function ajustesHtml(){
   const perf=perfilCfg();
   const kb=almacenamientoKB(), cuota=5*1024, libre=Math.max(0,cuota-kb), pctU=Math.max(0,Math.min(100,Math.round(kb/cuota*100)));
