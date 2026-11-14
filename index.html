@@ -628,9 +628,12 @@ let qOpen={todo:false,done:false};
 /* la lupa abre el campo hacia la izquierda y lo cierra con la misma animación; la animación solo suena al abrir (no al escribir) */
 let qNuevo={todo:false,done:false};
 const qHtml=k=>{const open=qOpen[k]||!!qB[k];const anim=qNuevo[k]?' qin':'';return `<div class="qrow">${open?`<input class="qsearch${anim}" data-qb="${k}" type="search" placeholder="Buscar una tarea…" value="${esc(qB[k]||'')}" autocomplete="off">`:''}<button class="qbtn${open?' on':''}" data-qtoggle="${k}" aria-label="Buscar tarea" title="Buscar">${ico('search',18)}</button></div>`};
+/* cierra el buscador con la animación inversa; se usa al pulsar la lupa o al quitarse el teclado */
+const closeQ=k=>{const n=document.querySelector(`[data-qb="${k}"]`);if(n){if(n.classList.contains('qout'))return;n.classList.add('qout');setTimeout(()=>{qOpen[k]=false;qB[k]='';qNuevo[k]=false;render()},200);return}qOpen[k]=false;qB[k]='';render()};
+document.addEventListener('focusout',e=>{const k=e.target.dataset&&e.target.dataset.qb;if(!k)return;setTimeout(()=>{const n=document.querySelector(`[data-qb="${k}"]`);if(!n||document.activeElement===n)return;closeQ(k)},150)});
 const qReset=()=>{qOpen={todo:false,done:false};qB={todo:'',done:''};qNuevo={todo:false,done:false}};
 document.addEventListener('click',e=>{const t=e.target.closest('[data-qtoggle]');if(!t)return;const k=t.dataset.qtoggle;const abierto=qOpen[k]||!!qB[k];
-  if(abierto){const n=document.querySelector(`[data-qb="${k}"]`);if(n){n.classList.add('qout');setTimeout(()=>{qOpen[k]=false;qB[k]='';qNuevo[k]=false;render()},200);return}qOpen[k]=false;qB[k]='';render();return}
+  if(abierto){closeQ(k);return}
   qOpen[k]=true;qNuevo[k]=true;render();qNuevo[k]=false;const n=document.querySelector(`[data-qb="${k}"]`);if(n)n.focus()});
 const PRIO_RANK={Alta:2,Media:1,Baja:0};
 let prioBiasData=(()=>{try{return JSON.parse(localStorage.getItem('planPrioBias')||'{}')||{}}catch(e){return {}}})();
@@ -835,7 +838,7 @@ function almacenamientoKB(){
   try{for(let k=0;k<localStorage.length;k++){const key=localStorage.key(k);bytes+=(key.length+(localStorage.getItem(key)||'').length)*2}}catch(e){}
   return bytes/1024;
 }
-const APP_VER='v-cal-4';
+const APP_VER='v-search-6';
 function ajustesHtml(){
   const perf=perfilCfg();
   const kb=almacenamientoKB(), cuota=5*1024, libre=Math.max(0,cuota-kb), pctU=Math.max(0,Math.min(100,Math.round(kb/cuota*100)));
