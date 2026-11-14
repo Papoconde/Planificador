@@ -476,6 +476,9 @@ body.dark .chip.gcal{background:#2a2a2a!important;color:#b5b3ad!important;border
 /* calendario móvil, estilo Calendario de iOS: número centrado (en círculo si es el día elegido) y puntos de color debajo */
 .dots{display:none}
 .calfil{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 12px}
+.qsearch{width:100%;max-width:420px;box-sizing:border-box;padding:9px 12px;margin:0 0 14px;border-radius:10px;border:1px solid #e6e5e1;background:#fff;color:inherit;font:inherit;outline:none}
+.qsearch:focus{border-color:#8fb8ff;box-shadow:0 0 0 3px rgba(143,184,255,.25)}
+body.dark .qsearch{background:#232323;border-color:#333;color:#e8e6e1}
 .calfil .btn .dot{width:8px;height:8px;margin-right:6px;display:inline-block;vertical-align:middle}
 @media(max-width:700px){
   .cal{gap:2px 0}
@@ -603,6 +606,11 @@ let todoOrden='grupo';
 let todoGrp='__all';
 const todoSeg=()=>`<div style="display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 16px"><button class="btn ${todoOrden==='grupo'?'on':''}" data-tord="grupo">Por grupo</button><button class="btn ${todoOrden==='reciente'?'on':''}" data-tord="reciente">Más recientes arriba</button></div>`;
 const filtGrupo=o=>todoGrp==='__all'||(o.g||'')===todoGrp;
+/* buscador de To Do y Completado: busca en el título y la asignatura, sin importar mayúsculas ni tildes */
+let qB={todo:'',done:''};
+const qNorm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+const qOk=(o,k)=>{const q=qNorm((qB[k]||'').trim());return !q||qNorm((o.t||'')+' '+(o.a||'')).includes(q)};
+const qHtml=k=>`<input class="qsearch" data-qb="${k}" type="search" placeholder="Buscar una tarea…" value="${esc(qB[k]||'')}" autocomplete="off">`;
 const PRIO_RANK={Alta:2,Media:1,Baja:0};
 let prioBiasData=(()=>{try{return JSON.parse(localStorage.getItem('planPrioBias')||'{}')||{}}catch(e){return {}}})();
 function prioBias(){return prioBiasData}
@@ -633,16 +641,16 @@ function statsTodo(){
   return `<div class="stats">${items.map(([k,n,l,c])=>`<div class="stat" data-tgrp="${k}" style="cursor:pointer;${todoGrp===k?'outline:2px solid '+c+';outline-offset:-2px':''}"><b style="color:${c}">${n}</b><span>${l}</span></div>`).join('')}</div>`;
 }
 function recienteHtml(){
-  const rows=act().filter(o=>o.pr!=='Idea'&&filtGrupo(o)).reverse();
-  return `<h1>✅ To Do</h1><div class="sub">${rows.length} tareas · las últimas arriba</div>${todoSeg()}`+statsTodo()+(rows.map(o=>card(o)).join('')||'<p class="mut">No hay tareas con este filtro.</p>');
+  const rows=act().filter(o=>o.pr!=='Idea'&&filtGrupo(o)&&qOk(o,'todo')).reverse();
+  return `<h1>✅ To Do</h1><div class="sub">${rows.length} tareas · las últimas arriba</div>${qHtml('todo')}${todoSeg()}`+statsTodo()+(rows.map(o=>card(o)).join('')||'<p class="mut">No hay tareas con este filtro.</p>');
 }
 function todoHtml(){
   if(todoOrden==='reciente')return recienteHtml();
-  const rows=act().filter(o=>o.pr!=='Idea'&&filtGrupo(o));
+  const rows=act().filter(o=>o.pr!=='Idea'&&filtGrupo(o)&&qOk(o,'todo'));
   const grupos=[...Object.keys(GC),''];
   const stat=(n,l,c)=>`<div class="stat"><b style="color:${c}">${n}</b><span>${l}</span></div>`;
   const statsHtml=statsTodo();
-  return `<h1>✅ To Do</h1><div class="sub">Pendientes por grupo · ＋ añadir</div>${todoSeg()}`+
+  return `<h1>✅ To Do</h1><div class="sub">Pendientes por grupo · ＋ añadir</div>${qHtml('todo')}${todoSeg()}`+
     statsHtml+(rows.length?'':'<p class="mut">No hay tareas con este filtro.</p>')+grupos.map(g=>{
       const list=rows.filter(o=>(o.g||'')===g).sort((a,b)=>(prioScore(b)-prioScore(a))||byFl(a,b));
       if(!list.length)return '';
@@ -710,7 +718,7 @@ let compG='__all';let compO='fecha';
 let compP='all',compN=3;
 function inPeriod(o){if(compP==='all')return true;const d=(o.pu||o.di||o.fl||'').slice(0,10);if(!d)return false;if(compP==='mes')return d.slice(0,7)===ymd(hoyD).slice(0,7);const c=new Date(hoyD);c.setMonth(c.getMonth()-compN);return d>=ymd(c)&&d<=ymd(hoyD)}
 function completadoHtml(){
-  const done=S.filter(o=>o.h&&inPeriod(o));
+  const done=S.filter(o=>o.h&&inPeriod(o)&&qOk(o,'done'));
   const byRecC=compO==='completado'?((a,b)=>(b.hAt||b.pu||b.di||b.fl||'').localeCompare(a.hAt||a.pu||a.di||a.fl||'')):((a,b)=>(b.pu||b.di||b.fl||'').localeCompare(a.pu||a.di||a.fl||''));
   const tabsDef=[['__all','Todas',done.length],...Object.keys(GC).map(g=>[g,({Universidad:'Uni',WithDesign:'Diseño'})[g]||g,done.filter(o=>o.g===g).length])];
   const tabs=`<div class="seg" id="seg"><div class="segind" id="segind"></div>${tabsDef.map(([k,l,n])=>`<button class="segb ${compG===k?'on':''}" data-cg="${k}">${k!=='__all'?`<span class="dot" style="background:${gc(k)};display:inline-block;margin-right:4px"></span>`:''}${l}<span class="segn">${n}</span></button>`).join('')}</div>`;
@@ -730,7 +738,7 @@ function completadoHtml(){
     const rows=done.filter(o=>o.g===compG).sort(byRecC);
     body=rows.map(o=>card(o)).join('')||`<p class="mut">Todavía no hay tareas completadas de ${esc(compG)}.</p>`;
   }
-  return `<h1>🏁 Completado</h1><div class="sub">${done.length} tareas hechas · desmarca una para devolverla a To Do</div>${tabs}${periodos}${body}`;
+  return `<h1>🏁 Completado</h1><div class="sub">${done.length} tareas hechas · desmarca una para devolverla a To Do</div>${qHtml('done')}${tabs}${periodos}${body}`;
 }
 function completadoHtmlOld(){
   const done=S.filter(o=>o.h);
@@ -803,7 +811,7 @@ function almacenamientoKB(){
   try{for(let k=0;k<localStorage.length;k++){const key=localStorage.key(k);bytes+=(key.length+(localStorage.getItem(key)||'').length)*2}}catch(e){}
   return bytes/1024;
 }
-const APP_VER='v-cal-2';
+const APP_VER='v-search-1';
 function ajustesHtml(){
   const perf=perfilCfg();
   const kb=almacenamientoKB(), cuota=5*1024, libre=Math.max(0,cuota-kb), pctU=Math.max(0,Math.min(100,Math.round(kb/cuota*100)));
@@ -1107,6 +1115,8 @@ document.addEventListener('pointerup',e=>{if(!segDrag)return;const d=segDrag;seg
 document.addEventListener('click',e=>{const r=e.target.closest('[data-rf]');if(!r)return;resFiltro=r.dataset.rf;section='rlist';page=null;render()});
 document.addEventListener('click',e=>{const t=e.target.closest('[data-tord]');if(!t)return;todoOrden=t.dataset.tord;render()});
 document.addEventListener('click',e=>{const g=e.target.closest('[data-tgrp]');if(!g)return;todoGrp=g.dataset.tgrp;render()});
+/* al escribir se refresca la lista y el cursor sigue en el buscador */
+document.addEventListener('input',e=>{const k=e.target.dataset&&e.target.dataset.qb;if(!k)return;qB[k]=e.target.value;render();const n=document.querySelector(`[data-qb="${k}"]`);if(n){n.focus();const L=n.value.length;n.setSelectionRange(L,L)}});
 document.addEventListener('click',e=>{if(!e.target.closest||!e.target.closest('[data-pquitar]'))return;savePerfil({foto:''});render()});
 document.addEventListener('change',e=>{
   const t=e.target;
