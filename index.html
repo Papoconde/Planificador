@@ -291,7 +291,7 @@ h1 svg{display:none!important}
 
 /* minimal pass: sin sombras ni saltos al pasar el ratón, menos aire, carga más ligera */
 .item,.trow,.stat,.dc,.pdet,.cardbox,.fab,.hero,.wdlg{box-shadow:none!important}
-.item:hover,.trow:hover{transform:none!important;box-shadow:none!important}
+.item:hover:not([data-swipe]),.trow:hover:not([data-swipe]){transform:none!important;box-shadow:none!important}
 .item,.trow,.stat,.dc,.pdet,.cardbox{transition:none!important}
 .item{padding:10px 12px;margin-bottom:6px;border:0;background:#f7f6f3}
 body.dark .item{background:#232323}
@@ -879,7 +879,7 @@ function almacenamientoKB(){
   try{for(let k=0;k<localStorage.length;k++){const key=localStorage.key(k);bytes+=(key.length+(localStorage.getItem(key)||'').length)*2}}catch(e){}
   return bytes/1024;
 }
-const APP_VER='v-wiz-15';
+const APP_VER='v-wiz-16';
 function ajustesHtml(){
   const perf=perfilCfg();
   const kb=almacenamientoKB(), cuota=5*1024, libre=Math.max(0,cuota-kb), pctU=Math.max(0,Math.min(100,Math.round(kb/cuota*100)));
