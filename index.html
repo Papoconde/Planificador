@@ -448,7 +448,8 @@ body.dark .wdlg .sumrow{background:#2a2a2a}
 .swwrap{position:relative}
 .wdrag{cursor:grab;color:#9b9a97;font-size:16px;padding:0 6px 0 0;user-select:none;-webkit-user-select:none}
 .wkday.hot{outline:2px solid #8fb8ff;outline-offset:-2px}
-@media(max-width:700px){.wdrag{display:none}}
+.wdrag{touch-action:none;padding:6px 8px 6px 0}
+.wkday.hot{outline:2px solid #8fb8ff}
 .item,.trow.wk{user-select:none;-webkit-user-select:none}
 .swbg{position:absolute;left:0;top:0;bottom:0;width:124px;background:#0f7b6c;color:#fff;border-radius:999px;display:flex;align-items:center;justify-content:center;gap:6px;overflow:hidden;white-space:nowrap;font-weight:600;font-size:14px;pointer-events:none;z-index:0}
 .swbg>span{flex-shrink:0}
@@ -890,6 +891,24 @@ document.addEventListener('dragover',e=>{if(!window.__wdrag)return;const d=e.tar
 document.addEventListener('dragleave',e=>{const d=e.target.closest&&e.target.closest('.wkday[data-day]');if(d&&!d.contains(e.relatedTarget))d.classList.remove('hot')});
 document.addEventListener('drop',e=>{if(!window.__wdrag)return;const d=e.target.closest&&e.target.closest('.wkday[data-day]');const id=window.__wdrag;window.__wdrag=null;if(!d)return;e.preventDefault();const o=S.find(x=>x.id===id);if(o&&o.di!==d.dataset.day){o.di=d.dataset.day;persist();render()}});
 document.addEventListener('dragend',()=>{window.__wdrag=null;document.querySelectorAll('.wkday.hot').forEach(x=>x.classList.remove('hot'))});
+let wdT=null;
+document.addEventListener('pointerdown',e=>{const h=e.target.closest&&e.target.closest('[data-wdrag]');if(!h||e.pointerType==='mouse')return;wdT={id:h.dataset.wdrag,el:h.closest('.item'),x:e.clientX,y:e.clientY,on:false,day:null};},{passive:true});
+document.addEventListener('pointermove',e=>{if(!wdT)return;const dx=e.clientX-wdT.x,dy=e.clientY-wdT.y;if(!wdT.on){if(Math.hypot(dx,dy)<8)return;wdT.on=true;wdT.el.style.opacity='.6';wdT.el.style.pointerEvents='none';wdT.el.style.zIndex='50'}
+  wdT.el.style.transform=`translate(${dx}px,${dy}px)`;
+  const d=document.elementFromPoint(e.clientX,e.clientY)?.closest('.wkday[data-day]');
+  document.querySelectorAll('.wkday.hot').forEach(x=>{if(x!==d)x.classList.remove('hot')});
+  if(d)d.classList.add('hot');wdT.day=d?d.dataset.day:null;
+},{passive:true});
+function wdEnd(){
+  if(!wdT)return;const w=wdT;wdT=null;
+  document.querySelectorAll('.wkday.hot').forEach(x=>x.classList.remove('hot'));
+  if(!w.on)return;
+  const o=S.find(x=>x.id===w.id);
+  if(o&&w.day&&o.di!==w.day){o.di=w.day;persist();render()}
+  else{w.el.style.transform='';w.el.style.opacity='';w.el.style.pointerEvents='';w.el.style.zIndex=''}
+}
+document.addEventListener('pointerup',wdEnd);
+document.addEventListener('pointercancel',()=>{if(wdT){wdT.el.style.transform='';wdT.el.style.opacity='';wdT.el.style.pointerEvents='';wdT=null}});
 function confirmBorrar(t){
   const n=(t||'esta tarea').trim();
   return confirm(`Vas a borrar «${n}».\n\nEsto ya no se puede recuperar: se quita de tu planificador y de la nube.\n\n¿Seguro que quieres borrarla?`);
