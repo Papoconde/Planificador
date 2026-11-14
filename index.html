@@ -625,7 +625,7 @@ function semanaHtml(){
 
 let todoOrden='grupo';
 let todoGrp='__all';
-const todoSeg=()=>`<div style="display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 16px"><button class="btn ${todoOrden==='grupo'?'on':''}" data-tord="grupo">Por grupo</button><button class="btn ${todoOrden==='reciente'?'on':''}" data-tord="reciente">Más recientes arriba</button></div>`;
+const todoSeg=()=>`<div style="display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 16px"><button class="btn ${todoOrden==='grupo'?'on':''}" data-tord="grupo">Por grupo</button><button class="btn ${todoOrden==='fecha'?'on':''}" data-tord="fecha">Por fecha</button><button class="btn ${todoOrden==='reciente'?'on':''}" data-tord="reciente">Más recientes arriba</button></div>`;
 const filtGrupo=o=>todoGrp==='__all'||(o.g||'')===todoGrp;
 /* buscador de To Do y Completado: busca en el título y la asignatura, sin importar mayúsculas ni tildes */
 let qB={todo:'',done:''};
@@ -677,8 +677,22 @@ function recienteHtml(){
   const rows=act().filter(o=>o.pr!=='Idea'&&filtGrupo(o)&&qOk(o,'todo')).reverse();
   return `<div class="hdrq"><h1>✅ To Do</h1>${qHtml('todo')}</div><div class="sub">${rows.length} tareas · las últimas arriba</div>${todoSeg()}`+statsTodo()+(rows.map(o=>card(o)).join('')||'<p class="mut">No hay tareas con este filtro.</p>');
 }
+/* Por fecha: tareas desde hoy en adelante, ordenadas por su día; las que no tienen fecha van al final */
+function fechaHtml(){
+  const hoyS=ymd(hoyD);
+  const man=ymd(new Date(hoyD.getFullYear(),hoyD.getMonth(),hoyD.getDate()+1));
+  const f=o=>(o.di||o.fl||'').slice(0,10);
+  const etiq=d=>{if(d===hoyS)return 'Hoy';if(d===man)return 'Mañana';const t=new Date(d+'T12:00:00').toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'});return t.charAt(0).toUpperCase()+t.slice(1).replace(' De ',' de ')};
+  const rows=act().filter(o=>o.pr!=='Idea'&&filtGrupo(o)&&qOk(o,'todo'));
+  const con=rows.filter(o=>f(o)&&f(o)>=hoyS).sort((a,b)=>f(a).localeCompare(f(b))||(a.fr||'').localeCompare(b.fr||''));
+  const sin=rows.filter(o=>!f(o));
+  let last='';
+  const cuerpo=con.map(o=>{const d=f(o);const h=d!==last?`<div class="grp">${etiq(d)}</div>`:'';last=d;return h+card(o)}).join('')+(sin.length?`<div class="grp">Sin fecha</div>`+sin.map(o=>card(o)).join(''):'');
+  return `<div class="hdrq"><h1>✅ To Do</h1>${qHtml('todo')}</div><div class="sub">Por fecha · desde hoy en adelante</div>${todoSeg()}`+(cuerpo||'<p class="mut">No hay tareas desde hoy en adelante.</p>');
+}
 function todoHtml(){
   if(todoOrden==='reciente')return recienteHtml();
+  if(todoOrden==='fecha')return fechaHtml();
   const rows=act().filter(o=>o.pr!=='Idea'&&filtGrupo(o)&&qOk(o,'todo'));
   const grupos=[...Object.keys(GC),''];
   const stat=(n,l,c)=>`<div class="stat"><b style="color:${c}">${n}</b><span>${l}</span></div>`;
@@ -709,7 +723,7 @@ function calHtml(){
     const key=calY+'-'+String(calM+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
     /* una entrada por tarea: si se publica ese día cuenta solo como publicación */
     const ent=[];
-    rows.forEach(o=>{if((o.pu||'').slice(0,10)===key)ent.push({o,pub:true});else if((o.di||o.fl||'').slice(0,10)===key)ent.push({o,pub:false})});
+    rows.forEach(o=>{if(o.g==='Redes'&&(o.pu||'').slice(0,10)===key)ent.push({o,pub:true});else if((o.di||o.fl||'').slice(0,10)===key)ent.push({o,pub:false})});
     const ch=ent.map(({o,pub})=>pub?`<span class="chip pub" data-open="${o.id}" style="--c:${gc('Redes')};background:#fde7f2">🚀${esc(o.t||'')}</span>`:`<span class="chip" data-open="${o.id}" style="--c:${ccol(o)};background:${ccol(o)}22;border-left:3px solid ${ccol(o)}">${ticon(o)}${esc(String(o.t||'Sin título').replace(/^\s*(⏩|📤|⚪)\s*/,''))}</span>`).join('');
     /* móvil: puntos agrupados por color (asignatura o grupo) con su número, así se ve cuántas tareas hay */
     const cols=new Map();
@@ -852,7 +866,7 @@ function almacenamientoKB(){
   try{for(let k=0;k<localStorage.length;k++){const key=localStorage.key(k);bytes+=(key.length+(localStorage.getItem(key)||'').length)*2}}catch(e){}
   return bytes/1024;
 }
-const APP_VER='v-search-9';
+const APP_VER='v-todo-1';
 function ajustesHtml(){
   const perf=perfilCfg();
   const kb=almacenamientoKB(), cuota=5*1024, libre=Math.max(0,cuota-kb), pctU=Math.max(0,Math.min(100,Math.round(kb/cuota*100)));
