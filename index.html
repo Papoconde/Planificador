@@ -243,6 +243,13 @@ body.dark .wkday{background:#202020}
 .pdet summary::-webkit-details-marker{display:none}
 .pdet[open] summary{border-bottom:1px solid #efefed;margin-bottom:8px}
 .pdet .pgrid{margin:8px 0 14px}
+.pbodyv{min-height:60vh;font-size:16px;line-height:1.7;color:#37352f;padding:4px 0;cursor:text;word-wrap:break-word}
+.pbodyv .pline{min-height:1.2em}
+.pbodyv details.psec{margin:14px 0 6px}
+.pbodyv details.psec>summary{font-size:21px;font-weight:700;cursor:pointer;padding:4px 0;list-style-position:inside}
+.pbodyv .pnote{font-style:italic;color:#8a6d1d;background:#fff6d6;border-radius:4px;padding:0 4px}
+body.dark .pbodyv{color:#e8e6e1}
+body.dark .pbodyv .pnote{color:#e6c866;background:#3a3320}
 .pbody{display:block;width:100%;min-height:60vh;border:0;background:transparent;padding:4px 0;font:inherit;font-size:16px;line-height:1.7;color:#37352f;outline:none;resize:none}
 body.dark .pdet{background:#232323;border-color:#333}
 body.dark .pbody{background:transparent;color:#e8e6e1}
@@ -964,6 +971,20 @@ function pageHtml(o){
   </div>`;
 }
 
+let bodyEdit=false;
+/* cuerpo de la página con formato: "## Título" = sección plegable, **negrita**, _cursiva_ = apunte de edición */
+function fmtInline(t){return t.replace(/\*\*([^*\n]+)\*\*/g,'<b>$1</b>').replace(/(^|[\s(])_([^_\n]+)_(?=[\s.,;:!?)]|$)/g,'$1<i class="pnote">$2</i>')}
+function hasFmt(t){return /(^|\n)## /.test(t)||/\*\*[^*\n]+\*\*/.test(t)||/(^|[\s(])_[^_\n]+_(?=[\s.,;:!?)]|$)/.test(t)}
+function bodyHtml(t){
+  let out='',open=false;
+  String(t||'').split('\n').forEach(l=>{
+    const m=l.match(/^##\s+(.*)$/);
+    if(m){if(open)out+='</details>';out+='<details class="psec" open><summary>'+fmtInline(esc(m[1]))+'</summary>';open=true}
+    else out+='<div class="pline">'+(l.trim()?fmtInline(esc(l)):'<br>')+'</div>';
+  });
+  if(open)out+='</details>';
+  return out;
+}
 let pEdit=false;
 function pageHtml2(o){
   const g=gc(o.g);
@@ -978,7 +999,7 @@ function pageHtml2(o){
     <div class="pchips"><span class="pill" style="background:${g}22;color:${g}">${esc(gLabel(o.g))}</span>${chips}${o.h?'<span class="pill">✅ Hecha</span>':''}</div>
     ${o.tr?`<div class="pdesc box">${o.d?esc(o.d):'<span class="mut">Pendiente de resumir…</span>'}<details class="ptr"><summary>Transcripción completa</summary><div>${esc(o.tr)}</div></details></div>`:o.d?`<div class="pdesc">${esc(o.d)}</div>`:''}
     ${pEdit?`<div class="pgrid">${props}</div>`:''}
-    <textarea class="pbody" data-pf="cu" data-pid="${o.id}" placeholder="Escribe aquí...">${esc(o.cu)}</textarea>
+    ${(!bodyEdit&&hasFmt(o.cu))?`<div class="pbodyv" data-bodyedit>${bodyHtml(o.cu)}</div>`:`<textarea class="pbody" data-pf="cu" data-pid="${o.id}" placeholder="Escribe aquí...">${esc(o.cu)}</textarea>`}
   </div>`;
 }
 function pageHtml2Old(o){
@@ -1150,7 +1171,7 @@ document.addEventListener('click',e=>{
   if('fmtcancel' in d){askId=null;return render()}
   if('puSave' in d){const o=S.find(x=>x.id===askPu);const v=(document.getElementById('puDate')||{}).value;if(o&&v)o.pu=v;askPu=null;persist();return render()}
   if('puCancel' in d){askPu=null;return render()}
-  if('back' in d){page=null;return render()}
+  if('back' in d){page=null;bodyEdit=false;return render()}
   if('del' in d){const di=S.find(x=>x.id===d.del);return confirmBorrar(di?di.t:'esta tarea',()=>{S=S.filter(x=>x.id!==d.del);page=null;persist();render()})}
   if('calg' in d){calG=d.calg;return render()}
   if('month' in d){calM+=+d.month;if(calM<0){calM=11;calY--}if(calM>11){calM=0;calY++}return render()}
@@ -1222,6 +1243,8 @@ document.addEventListener('change',e=>{
     fr.readAsDataURL(t.files[0]);
   }
 });
+document.addEventListener('click',e=>{const v=e.target.closest('[data-bodyedit]');if(!v||e.target.closest('summary'))return;if(String(window.getSelection())!=='')return;bodyEdit=true;render();const ta=document.querySelector('.pbody');if(ta){ta.focus();ta.setSelectionRange(0,0)}});
+document.addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('pbody')&&bodyEdit){bodyEdit=false;render()}});
 document.addEventListener('click',e=>{if(!e.target.closest('[data-pedit]'))return;pEdit=!pEdit;render()});
 document.addEventListener('change',e=>{if(e.target.dataset&&'cn' in e.target.dataset&&e.target.value){compP='n';compN=+e.target.value;render()}});
 document.addEventListener('click',e=>{const p=e.target.closest('[data-cp]');if(!p)return;compP=p.dataset.cp;render()});
