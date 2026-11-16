@@ -895,7 +895,7 @@ function almacenamientoKB(){
   try{for(let k=0;k<localStorage.length;k++){const key=localStorage.key(k);bytes+=(key.length+(localStorage.getItem(key)||'').length)*2}}catch(e){}
   return bytes/1024;
 }
-const APP_VER='v-wiz-28';
+const APP_VER='v-wiz-29';
 function ajustesHtml(){
   const perf=perfilCfg();
   const kb=almacenamientoKB(), cuota=5*1024, libre=Math.max(0,cuota-kb), pctU=Math.max(0,Math.min(100,Math.round(kb/cuota*100)));
@@ -1554,6 +1554,11 @@ async function startVoice(){
 document.addEventListener('click',e=>{if(e.target.closest('[data-vcancel]')&&window.voiceDict){window.voiceDict.stop().catch(()=>{})}});
 
 /* deslizar a la derecha para completar una tarea (To Do y calendario) */
+/* calendario: deslizar con el dedo a la izquierda pasa al mes siguiente y a la derecha al anterior */
+let calSw=null;
+document.addEventListener('pointerdown',e=>{if(e.pointerType!=='touch'||page||section!=='cal'||!e.target.closest('#main'))return;calSw={x:e.clientX,y:e.clientY}},{passive:true});
+document.addEventListener('pointerup',e=>{if(!calSw)return;const d=calSw;calSw=null;const dx=e.clientX-d.x,dy=e.clientY-d.y;if(Math.abs(dx)>60&&Math.abs(dy)<40){calM+=dx<0?1:-1;if(calM<0){calM=11;calY--}if(calM>11){calM=0;calY++}render()}});
+document.addEventListener('pointercancel',()=>{calSw=null});
 let swDrag=null, swToast=null;
 function swWrap(el){
   if(el._swWrap||!el.parentNode)return;
