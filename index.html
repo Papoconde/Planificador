@@ -828,9 +828,9 @@ function completadoHtmlOld(){
 
 function resumenHtml(){
   const ym=ymd(hoyD).slice(0,7);
-  // hecha esta semana = completada entre el lunes y el domingo; las pendientes cuentan si caen en la semana
+  // cuentan las tareas con fecha en esta semana; si ya están hechas, solo si se completaron esta semana
   const hechaEsta=o=>o.h&&o.hAt&&o.hAt.slice(0,10)>=mon&&o.hAt.slice(0,10)<=sun;
-  const semAll=S.filter(o=>o.h?hechaEsta(o):inWeek(o));
+  const semAll=S.filter(o=>inWeek(o)&&(!o.h||hechaEsta(o)));
   const semDone=semAll.filter(o=>o.h).length;
   const pctS=semAll.length?Math.round(semDone/semAll.length*100):0;
   const pendT=act().filter(o=>o.g!=='Redes'&&inWeek(o)).length;
@@ -890,7 +890,7 @@ function almacenamientoKB(){
   try{for(let k=0;k<localStorage.length;k++){const key=localStorage.key(k);bytes+=(key.length+(localStorage.getItem(key)||'').length)*2}}catch(e){}
   return bytes/1024;
 }
-const APP_VER='v-wiz-20';
+const APP_VER='v-wiz-21';
 function ajustesHtml(){
   const perf=perfilCfg();
   const kb=almacenamientoKB(), cuota=5*1024, libre=Math.max(0,cuota-kb), pctU=Math.max(0,Math.min(100,Math.round(kb/cuota*100)));
