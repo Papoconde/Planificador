@@ -922,7 +922,7 @@ function almacenamientoKB(){
   try{for(let k=0;k<localStorage.length;k++){const key=localStorage.key(k);bytes+=(key.length+(localStorage.getItem(key)||'').length)*2}}catch(e){}
   return bytes/1024;
 }
-const APP_VER='v-wiz-34';
+const APP_VER='v-wiz-35';
 function ajustesHtml(){
   const perf=perfilCfg();
   const kb=almacenamientoKB(), cuota=5*1024, libre=Math.max(0,cuota-kb), pctU=Math.max(0,Math.min(100,Math.round(kb/cuota*100)));
@@ -1587,6 +1587,7 @@ document.addEventListener('click',e=>{if(e.target.closest('[data-vcancel]')&&win
 /* deslizar a la derecha para completar una tarea (To Do y calendario) */
 /* calendario: al deslizar, el mes actual y el vecino (siguiente o anterior) se mueven juntos con el dedo; al soltar se asientan en uno de los dos */
 let calSw=null;
+const CAL_GAP=28; /* espacio invisible entre el mes actual y el vecino al deslizar */
 const calEl=()=>document.querySelector('#main .cal');
 /* construye la cuadrícula de otro mes sin tocar el mes que se está viendo */
 function calPreview(y,m){
@@ -1617,7 +1618,7 @@ document.addEventListener('pointermove',e=>{
   const dir=dx<0?1:-1;
   if(!calSw.pan||calSw.pan.dir!==dir){calSw.pan=calPanStart(dir)}
   const pan=calSw.pan;if(!pan)return;
-  const off=dir*pan.w;
+  const off=dir*(pan.w+CAL_GAP);
   pan.cur.style.animation='none';pan.cur.style.transition='none';pan.cur.style.transform=`translateX(${dx}px)`;
   pan.nb.style.transition='none';pan.nb.style.transform=`translateX(${dx+off}px)`;
 },{passive:true});
@@ -1628,12 +1629,12 @@ function calSettle(commit){
   const ease='transform .22s cubic-bezier(.2,.8,.2,1)';
   pan.cur.style.transition=ease;pan.nb.style.transition=ease;
   if(commit){
-    pan.cur.style.transform=`translateX(${-pan.dir*pan.w}px)`;
+    pan.cur.style.transform=`translateX(${-pan.dir*(pan.w+CAL_GAP)}px)`;
     pan.nb.style.transform='translateX(0px)';
     setTimeout(()=>{calDir=0;calM+=pan.dir;if(calM<0){calM=11;calY--}if(calM>11){calM=0;calY++}render()},230);
   }else{
     pan.cur.style.transform='translateX(0px)';
-    pan.nb.style.transform=`translateX(${pan.dir*pan.w}px)`;
+    pan.nb.style.transform=`translateX(${pan.dir*(pan.w+CAL_GAP)}px)`;
     setTimeout(()=>pan.nb.remove(),240);
   }
 }
