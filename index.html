@@ -112,6 +112,7 @@ body.dark .navind{background:#333}
 .lift{transform:scale(1.035);box-shadow:0 12px 28px rgba(35,131,226,.28)!important;transition:transform .15s ease,box-shadow .15s ease;position:relative;z-index:2}
 .dc.sel{outline:2px solid #2383e2;outline-offset:-2px}
 .dc.hoy .num{color:#2383e2;font-weight:800}
+.cal{touch-action:pan-y}
 @keyframes calInF{from{opacity:0;transform:translateX(42px)}to{opacity:1;transform:none}}
 @keyframes calInB{from{opacity:0;transform:translateX(-42px)}to{opacity:1;transform:none}}
 .cal.calin-f{animation:calInF .28s cubic-bezier(.2,.8,.2,1)}
@@ -904,7 +905,7 @@ function almacenamientoKB(){
   try{for(let k=0;k<localStorage.length;k++){const key=localStorage.key(k);bytes+=(key.length+(localStorage.getItem(key)||'').length)*2}}catch(e){}
   return bytes/1024;
 }
-const APP_VER='v-wiz-31';
+const APP_VER='v-wiz-32';
 function ajustesHtml(){
   const perf=perfilCfg();
   const kb=almacenamientoKB(), cuota=5*1024, libre=Math.max(0,cuota-kb), pctU=Math.max(0,Math.min(100,Math.round(kb/cuota*100)));
@@ -1564,11 +1565,35 @@ async function startVoice(){
 document.addEventListener('click',e=>{if(e.target.closest('[data-vcancel]')&&window.voiceDict){window.voiceDict.stop().catch(()=>{})}});
 
 /* deslizar a la derecha para completar una tarea (To Do y calendario) */
-/* calendario: deslizar con el dedo a la izquierda pasa al mes siguiente y a la derecha al anterior */
+/* calendario: el cuadrante sigue al dedo al deslizar; al soltar pasa de mes si se ha arrastrado lo suficiente, si no vuelve a su sitio */
 let calSw=null;
-document.addEventListener('pointerdown',e=>{if(e.pointerType!=='touch'||page||section!=='cal'||!e.target.closest('#main'))return;calSw={x:e.clientX,y:e.clientY}},{passive:true});
-document.addEventListener('pointerup',e=>{if(!calSw)return;const d=calSw;calSw=null;const dx=e.clientX-d.x,dy=e.clientY-d.y;if(Math.abs(dx)>60&&Math.abs(dy)<40){calDir=dx<0?1:-1;calM+=dx<0?1:-1;if(calM<0){calM=11;calY--}if(calM>11){calM=0;calY++}render()}});
-document.addEventListener('pointercancel',()=>{calSw=null});
+const calEl=()=>document.querySelector('#main .cal');
+document.addEventListener('pointerdown',e=>{if(e.pointerType!=='touch'||page||section!=='cal'||!e.target.closest('#main .cal'))return;calSw={x:e.clientX,y:e.clientY,on:false}},{passive:true});
+document.addEventListener('pointermove',e=>{
+  if(!calSw||e.pointerType!=='touch')return;
+  const dx=e.clientX-calSw.x,dy=e.clientY-calSw.y;
+  if(!calSw.on){if(Math.abs(dx)>10&&Math.abs(dx)>Math.abs(dy)*1.3)calSw.on=true;else return}
+  const c=calEl();if(!c)return;
+  c.style.animation='none';c.style.transition='none';c.style.transform=`translateX(${dx}px)`;
+},{passive:true});
+function calSnap(dx){
+  const c=calEl();if(!c)return;
+  c.style.transition='transform .2s cubic-bezier(.2,.8,.2,1)';c.style.transform='translateX(0)';
+}
+document.addEventListener('pointerup',e=>{
+  if(!calSw)return;const d=calSw;calSw=null;
+  if(!d.on)return;
+  const dx=e.clientX-d.x;
+  const c=calEl();
+  const w=c?c.offsetWidth:300;
+  if(Math.abs(dx)>Math.min(90,w*.22)&&c){
+    const dir=dx<0?1:-1;
+    c.style.transition='transform .18s ease-in,opacity .18s ease-in';
+    c.style.transform=`translateX(${dir>0?-w:w}px)`;c.style.opacity='0';
+    setTimeout(()=>{calDir=dir;calM+=dir;if(calM<0){calM=11;calY--}if(calM>11){calM=0;calY++}render()},180);
+  }else calSnap(dx);
+});
+document.addEventListener('pointercancel',()=>{if(calSw&&calSw.on)calSnap(0);calSw=null});
 let swDrag=null, swToast=null;
 function swWrap(el){
   if(el._swWrap||!el.parentNode)return;
