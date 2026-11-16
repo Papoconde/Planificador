@@ -604,6 +604,8 @@ function inWeek(o){return [o.di,o.fl].some(x=>x&&x.slice(0,10)>=mon&&x.slice(0,1
 const byFl=(a,b)=>(a.fl||'9999').localeCompare(b.fl||'9999');
 // fecha que se muestra en grande: el día en que lo haces; si no hay, la fecha límite
 const refDia=o=>o.di||o.fl||'';
+// hecha esta semana: completada entre el lunes y el domingo
+const hechaEsta=o=>o.h&&o.hAt&&o.hAt.slice(0,10)>=mon&&o.hAt.slice(0,10)<=sun;
 const byRef=(a,b)=>(refDia(a)||'9999').localeCompare(refDia(b)||'9999');
 
 function visibleKeys(d){
@@ -832,7 +834,6 @@ function completadoHtmlOld(){
 function resumenHtml(){
   const ym=ymd(hoyD).slice(0,7);
   // cuentan las tareas con fecha en esta semana; si ya están hechas, solo si se completaron esta semana
-  const hechaEsta=o=>o.h&&o.hAt&&o.hAt.slice(0,10)>=mon&&o.hAt.slice(0,10)<=sun;
   const semAll=S.filter(o=>inWeek(o)&&(!o.h||hechaEsta(o)));
   const semDone=semAll.filter(o=>o.h).length;
   const pctS=semAll.length?Math.round(semDone/semAll.length*100):0;
@@ -854,7 +855,7 @@ function resumenHtml(){
   const tc=pctS<34?'#d44c47':pctS<67?'#d9a20f':'#0f7b6c';
   const hoyTxt=hoyD.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'});
   const term=`<div style="display:flex;flex-direction:column;align-items:center;width:64px;flex-shrink:0"><div style="position:relative;width:26px;height:190px;border:2px solid #d8d6d1;border-radius:14px 14px 4px 4px;background:#f3f2ef;overflow:hidden"><div style="position:absolute;bottom:0;left:0;right:0;height:${pctS}%;background:linear-gradient(${tc}88,${tc});transition:height .6s"></div></div><div style="width:48px;height:48px;border-radius:50%;background:${tc};margin-top:-6px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px">${pctS}%</div></div>`;
-  return `<div class="hero">${perf.foto?`<img class="hero-face" src="${esc(perf.foto)}" alt="">`:''}<div class="hero-d">${esc(hoyTxt)}</div><div class="hero-h">${saludo}${perf.nombre?", "+esc(perf.nombre):""}</div><div class="hero-t">Así vas esta semana</div><div class="hero-n">${pctS}%</div><div class="hero-s">${semDone} de ${semAll.length} hechas</div><div class="thermo"><div class="tt"><div class="${(()=>{const g=!window.__tg||window.__tgPct!==pctS;window.__tg=true;window.__tgPct=pctS;return g?'grow':''})()}" style="width:${pctS}%"></div></div><div class="tb">${semDone}/${semAll.length}</div></div><div class="hero-f">${esc(frase)}</div></div>
+  return `<div class="hero">${perf.foto?`<img class="hero-face" src="${esc(perf.foto)}" alt="">`:''}<div class="hero-d">${esc(hoyTxt)}</div><div class="hero-h">${saludo}${perf.nombre?", "+esc(perf.nombre):""}</div><div class="hero-t">Así vas esta semana</div><div class="hero-n">${pctS}%</div><div class="hero-s" data-rf="semana" style="cursor:pointer">${semDone} de ${semAll.length} hechas</div><div class="thermo" data-rf="semana" style="cursor:pointer"><div class="tt"><div class="${(()=>{const g=!window.__tg||window.__tgPct!==pctS;window.__tg=true;window.__tgPct=pctS;return g?'grow':''})()}" style="width:${pctS}%"></div></div><div class="tb">${semDone}/${semAll.length}</div></div><div class="hero-f">${esc(frase)}</div></div>
     <div class="stats">${rstat('pendT',pendT,'tareas de esta semana sin hacer','#2383e2')}${rstat('pendV',pendV,'vídeos en proceso','#d44c8f')}${rstat('subMes',subMes,'vídeos subidos este mes','#0f7b6c')}</div>
     <div class="grp">📌 Próximas fechas límite</div>
     ${proximas.map(cardDate).join('')||'<p class="mut">No tienes fechas límite pendientes.</p>'}${settingsHtml()}`;
@@ -893,7 +894,7 @@ function almacenamientoKB(){
   try{for(let k=0;k<localStorage.length;k++){const key=localStorage.key(k);bytes+=(key.length+(localStorage.getItem(key)||'').length)*2}}catch(e){}
   return bytes/1024;
 }
-const APP_VER='v-wiz-22';
+const APP_VER='v-wiz-23';
 function ajustesHtml(){
   const perf=perfilCfg();
   const kb=almacenamientoKB(), cuota=5*1024, libre=Math.max(0,cuota-kb), pctU=Math.max(0,Math.min(100,Math.round(kb/cuota*100)));
@@ -935,6 +936,7 @@ function listaHtml(){
   const ym=ymd(hoyD).slice(0,7);
   let rows,titulo;
   if(resFiltro==='pendT'){titulo='Tareas de esta semana sin hacer';rows=act().filter(o=>o.g!=='Redes'&&inWeek(o)).sort(byFl)}
+  else if(resFiltro==='semana'){titulo='Tareas de esta semana';rows=S.filter(o=>inWeek(o)&&(!o.h||hechaEsta(o))).sort((a,b)=>(a.h-b.h)||byRef(a,b))}
   else if(resFiltro==='pendV'){titulo='Vídeos en proceso';rows=act().filter(o=>o.g==='Redes'&&o.pr!=='Idea').sort(byFl)}
   else if(resFiltro==='subMes'){titulo='Vídeos subidos este mes';rows=S.filter(o=>o.g==='Redes'&&o.pr==='Subido'&&(o.pu||'').slice(0,7)===ym).sort((a,b)=>(b.pu||'').localeCompare(a.pu||''))}
   else{titulo='Tareas que te quedan esta semana';rows=act().filter(inWeek).sort(byFl)}
