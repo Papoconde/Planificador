@@ -482,6 +482,7 @@ body.wdl .item[data-wdrag]:not(.lift){opacity:.35;transition:opacity .15s}
 .item,.trow.wk{user-select:none;-webkit-user-select:none}
 .swbg{position:absolute;left:0;top:0;bottom:0;width:124px;background:#0f7b6c;color:#fff;border-radius:999px;display:flex;align-items:center;justify-content:center;gap:6px;overflow:hidden;white-space:nowrap;font-weight:600;font-size:14px;pointer-events:none;z-index:0}
 .swbg>span{flex-shrink:0}
+.swbg.undo{background:#d23f3f}
 .swbg .swlbl{opacity:var(--swl,0)}
 .swwrap>.item{position:relative;z-index:1}
 .swtoast{position:fixed;left:12px;right:12px;bottom:calc(96px + env(safe-area-inset-bottom));z-index:30;background:#262626;color:#fff;border-radius:14px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 8px 24px rgba(0,0,0,.4);font-size:14px}
@@ -894,7 +895,7 @@ function almacenamientoKB(){
   try{for(let k=0;k<localStorage.length;k++){const key=localStorage.key(k);bytes+=(key.length+(localStorage.getItem(key)||'').length)*2}}catch(e){}
   return bytes/1024;
 }
-const APP_VER='v-wiz-24';
+const APP_VER='v-wiz-25';
 function ajustesHtml(){
   const perf=perfilCfg();
   const kb=almacenamientoKB(), cuota=5*1024, libre=Math.max(0,cuota-kb), pctU=Math.max(0,Math.min(100,Math.round(kb/cuota*100)));
@@ -1546,11 +1547,14 @@ document.addEventListener('click',e=>{if(e.target.closest('[data-vcancel]')&&win
 /* deslizar a la derecha para completar una tarea (To Do y calendario) */
 let swDrag=null, swToast=null;
 function swWrap(el){
-  if(el._swWrap)return;
+  if(el._swWrap||!el.parentNode)return;
   const w=document.createElement('div');w.className='swwrap';
   w.style.marginBottom=getComputedStyle(el).marginBottom;
   const bg=document.createElement('div');bg.className='swbg';
-  bg.innerHTML='<span>✓</span><span class="swlbl">Completado</span>';
+  // en una tarea ya hecha el deslizar la desmarca: fondo rojo con «No completado»
+  const undo=el.classList.contains('done');
+  bg.className='swbg'+(undo?' undo':'');
+  bg.innerHTML=undo?'<span>✕</span><span class="swlbl">No completado</span>':'<span>✓</span><span class="swlbl">Completado</span>';
   el.style.margin='0';
   el.parentNode.insertBefore(w,el);w.appendChild(bg);w.appendChild(el);
   el._swWrap=w;el._swBg=bg;
@@ -1571,7 +1575,7 @@ document.addEventListener('pointerdown',e=>{
   if(e.pointerType!=='touch'&&e.pointerType!=='mouse')return;
   if(e.pointerType==='mouse'&&e.button!==0)return;
   const el=e.target.closest('.item,.trow.wk');
-  if(!el||el.closest('.kanban')||el.classList.contains('done')||e.target.closest('select,textarea,button,input:not([type=checkbox])'))return;
+  if(!el||el.closest('.kanban')||e.target.closest('select,textarea,button,input:not([type=checkbox])'))return;
   const oa=el.querySelector('[data-open]');if(!oa)return;
   swDrag={el,id:oa.dataset.open,x:e.clientX,y:e.clientY,on:false,dx:0,pt:e.pointerType};
 },{passive:true});
@@ -1595,8 +1599,10 @@ function swEnd(e){
   // con ratón basta un poco menos de recorrido que con el dedo
   if(d.dx>=(d.pt==='mouse'?80:110)){
     d.el.style.transition='transform .25s ease';d.el.style.transform='translateX(110%)';
-    const id=d.id;
-    setTimeout(()=>{const o=S.find(x=>x.id===id);if(o){o.h=true;o.hAt=nowAt();persist();render()}showSwToast(id)},150);
+    const id=d.id, undo=d.el.classList.contains('done');
+    setTimeout(()=>{const o=S.find(x=>x.id===id);
+      if(undo){if(o){o.h=false;o.hAt='';persist();render()}return}
+      if(o){o.h=true;o.hAt=nowAt();persist();render()}showSwToast(id)},150);
   }else{swReset(d.el)}
 }
 document.addEventListener('pointerup',e=>swEnd(e));
