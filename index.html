@@ -112,6 +112,7 @@ body.dark .navind{background:#333}
 .lift{transform:scale(1.035);box-shadow:0 12px 28px rgba(35,131,226,.28)!important;transition:transform .15s ease,box-shadow .15s ease;position:relative;z-index:2}
 .dc.sel{outline:2px solid #2383e2;outline-offset:-2px}
 .dc.hoy .num{color:#2383e2;font-weight:800}
+.item.urg{box-shadow:inset 3px 0 0 #d23f3f}
 .cal{touch-action:pan-y}
 .calname{cursor:pointer;font-size:16px;padding:6px 10px;border-radius:10px}
 .calname:hover{background:rgba(127,127,127,.12)}
@@ -574,7 +575,7 @@ body.dark .qsearch{background:#232323;border-color:#333;color:#e8e6e1}
 <script>
 document.addEventListener('selectstart',e=>{if(!e.target.closest||!e.target.closest('textarea,input,[contenteditable]'))e.preventDefault()});
 document.addEventListener('contextmenu',e=>{if(!e.target.closest||!e.target.closest('textarea,input,[contenteditable]'))e.preventDefault()});
-const K=['t','h','g','sg','a','p','ty','pr','e','f','tv','hs','du','fr','d','n','fl','di','pu','cu','tr','hAt'];
+const K=['t','h','g','sg','a','p','ty','pr','e','f','tv','hs','du','fr','d','n','fl','di','pu','cu','tr','hAt','urg'];
 const L={g:['Universidad','Redes','Personal','WithDesign'],sg:['🎬 Vídeos','📌 Otros','🖌️ Diseño'],a:['Inglés','Proyecto I','Infografía','Diseño crítico','Cultura visual'],p:['Alta','Media','Baja'],ty:['Obligatorio','⏩ Adelanto','Opcional','Entrega'],pr:['Idea','Por grabar','Grabado','Editado','Subido'],e:['Sin estado','Sin empezar','En curso','Listo'],f:['Reel','Carrusel'],tv:['Logo / curiosidad','Rebrand','Tipografía','Opinión','Reto','Personal']};
 const PROPS=[
  {k:'t',l:'Tarea',type:'text'},{k:'h',l:'Hecho',type:'check'},
@@ -626,7 +627,7 @@ const byFl=(a,b)=>(a.fl||'9999').localeCompare(b.fl||'9999');
 const refDia=o=>o.di||o.fl||'';
 // hecha esta semana: completada entre el lunes y el domingo
 const hechaEsta=o=>o.h&&o.hAt&&o.hAt.slice(0,10)>=mon&&o.hAt.slice(0,10)<=sun;
-const byRef=(a,b)=>(refDia(a)||'9999').localeCompare(refDia(b)||'9999');
+const byRef=(a,b)=>((b.urg&&!b.h?1:0)-(a.urg&&!a.h?1:0))||(refDia(a)||'9999').localeCompare(refDia(b)||'9999');
 
 function visibleKeys(d){
   const ks=['g','t','p'];
@@ -645,7 +646,7 @@ function card(o,hora,sinTick,drag){
   const fd=(ref&&!hora)?new Date(ref.slice(0,10)+'T12:00:00'):null;
   const badge=(hora)?'':fd?`<div class="dbadge"><b>${fd.getDate()}</b><span>${esc(fd.toLocaleDateString('es-ES',{month:'short'}).replace('.',''))}</span></div>`:`<div class="dbadge"><b>—</b><span>sin</span></div>`;
   const strip=(o.g||o.a)?`border-left:4px solid ${ccol(o)};`:'';
-  return `<div class="item ${o.h?'done':''}" ${hora||drag?`data-wdrag="${o.id}"`:''} style="${strip}align-items:center">
+  return `<div class="item ${o.h?'done':''}${o.urg&&!o.h?' urg':''}" ${hora||drag?`data-wdrag="${o.id}"`:''} style="${strip}align-items:center">
     ${o.h&&!sinTick?`<input type="checkbox" data-h="${o.id}" checked>`:''}${badge}
     <div style="flex:1;min-width:0"><a class="tt" data-open="${o.id}">${ticon(o)}${esc(String(o.t||'Sin título').replace(/^\s*(⏩|📤|⚪)\s*/,''))}</a>
     <div class="meta"><span class="pill gtag" style="background:rgba(127,127,127,.16);color:#c9c7c1;font-weight:600"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${gc(o.g)};margin-right:5px"></span>${esc(gLabel(o.g))}</span>${o.a?`<span class="pill">${esc(o.a)}</span>`:''}${ppill(o)}${o.pr?`<span class="pill" style="background:${PRC[o.pr]||'#efefed'}22">${esc(o.pr)}</span>`:''}${hora&&o.fr?`<span class="pill">🕒 ${esc(o.fr)}</span>`:''}</div></div></div>`;
@@ -924,7 +925,7 @@ function almacenamientoKB(){
   try{for(let k=0;k<localStorage.length;k++){const key=localStorage.key(k);bytes+=(key.length+(localStorage.getItem(key)||'').length)*2}}catch(e){}
   return bytes/1024;
 }
-const APP_VER='v-wiz-36';
+const APP_VER='v-wiz-37';
 function ajustesHtml(){
   const perf=perfilCfg();
   const kb=almacenamientoKB(), cuota=5*1024, libre=Math.max(0,cuota-kb), pctU=Math.max(0,Math.min(100,Math.round(kb/cuota*100)));
@@ -1174,7 +1175,20 @@ function confirmBorrar(t,onOk){
   document.getElementById('cdYes').onclick=()=>{close();onOk()};
 }
 function fitPT(el){if(!el)return;el.style.height='auto';el.style.height=el.scrollHeight+'px'}
+/* tareas pendientes cuyo día ya ha pasado: pasan al lunes de la semana siguiente con prioridad máxima */
+function rodarPendientes(){
+  const hoyK=ymd(hoyD);
+  const d=new Date(mon+'T12:00:00');d.setDate(d.getDate()+7);const lunesSig=ymd(d);
+  let ch=false;
+  S.forEach(o=>{
+    if(o.h){if(o.urg){o.urg='';ch=true}return}
+    const r=(o.di||o.fl||'').slice(0,10);
+    if(r&&r<hoyK){o.di=lunesSig;o.urg='1';ch=true}
+  });
+  if(ch)persist();
+}
 function render(){
+  rodarPendientes();
   const _home=!page&&section==='resumen';
   if(_home&&!window.__wasHome)window.__tg=false;
   window.__wasHome=_home;
